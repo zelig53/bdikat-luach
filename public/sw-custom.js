@@ -17,8 +17,31 @@ self.addEventListener('activate', e => {
     caches.keys().then(keys =>
       Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))
     ).then(() => self.clients.claim())
+    .then(() => restoreReminders()) // שחזר תזכורות שמורות
   );
 });
+
+async function restoreReminders() {
+  try {
+    const db = await openDB();
+    const reminders = await new Promise((res, rej) => {
+      const tx = db.transaction(STORE_NAME, 'readonly');
+      const req = tx.objectStore(STORE_NAME).getAll();
+      req.onsuccess = e => res(e.target.result);
+      req.onerror = e => rej(e.target.error);
+    });
+    for (const r of reminders) {
+      const delay = new Date(r.fireAt).getTime() - Date.now();
+      if (delay <= 0) { await deleteReminder(r.noteId); continue; }
+      setTimeout(async () => {
+        await self.registration.showNotification(r.title, {
+          body: r.body, icon: '/icon.svg', tag: r.noteId, renotify: false,
+        });
+        await deleteReminder(r.noteId);
+      }, delay);
+    }
+  } catch(e) { console.warn('restoreReminders failed:', e); }
+}
 
 self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET') return;
