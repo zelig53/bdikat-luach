@@ -1,10 +1,33 @@
-// Service Worker מותאם — ניהול תזכורות
+// Service Worker — התראות + PWA install support
+const CACHE_NAME = 'bdikat-luach-v1';
 const DB_NAME = 'reminders-db';
 const STORE_NAME = 'reminders';
 
-self.addEventListener('install', e => e.waitUntil(self.skipWaiting()));
-self.addEventListener('activate', e => e.waitUntil(self.clients.claim()));
+self.addEventListener('install', e => {
+  e.waitUntil(
+    caches.open(CACHE_NAME).then(cache =>
+      cache.addAll(['/', '/index.html', '/manifest.json', '/icon.svg'])
+        .catch(() => {}) // ignore cache errors
+    ).then(() => self.skipWaiting())
+  );
+});
 
+self.addEventListener('activate', e => {
+  e.waitUntil(
+    caches.keys().then(keys =>
+      Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))
+    ).then(() => self.clients.claim())
+  );
+});
+
+self.addEventListener('fetch', e => {
+  if (e.request.method !== 'GET') return;
+  e.respondWith(
+    fetch(e.request).catch(() => caches.match(e.request))
+  );
+});
+
+// ---- IndexedDB helpers ----
 function openDB() {
   return new Promise((resolve, reject) => {
     const req = indexedDB.open(DB_NAME, 1);
@@ -14,75 +37,41 @@ function openDB() {
   });
 }
 
-async function saveReminder(reminder) {
+async function saveReminder(r) {
   const db = await openDB();
-  return new Promise((resolve, reject) => {
+  return new Promise((res, rej) => {
     const tx = db.transaction(STORE_NAME, 'readwrite');
-    tx.objectStore(STORE_NAME).put(reminder);
-    tx.oncomplete = resolve;
-    tx.onerror = e => reject(e.target.error);
+    tx.objectStore(STORE_NAME).put(r);
+    tx.oncomplete = res; tx.onerror = e => rej(e.target.error);
   });
 }
 
-async function deleteReminder(noteId) {
+async function deleteReminder(id) {
   const db = await openDB();
-  return new Promise((resolve, reject) => {
+  return new Promise((res, rej) => {
     const tx = db.transaction(STORE_NAME, 'readwrite');
-    tx.objectStore(STORE_NAME).delete(noteId);
-    tx.oncomplete = resolve;
-    tx.onerror = e => reject(e.target.error);
+    tx.objectStore(STORE_NAME).delete(id);
+    tx.oncomplete = res; tx.onerror = e => rej(e.target.error);
   });
 }
 
-async function getAllReminders() {
-  const db = await openDB();
-  return new Promise((resolve, reject) => {
-    const tx = db.transaction(STORE_NAME, 'readonly');
-    const req = tx.objectStore(STORE_NAME).getAll();
-    req.onsuccess = e => resolve(e.target.result);
-    req.onerror = e => reject(e.target.error);
-  });
-}
-
-async function checkAndFireReminders() {
-  const reminders = await getAllReminders();
-  const now = Date.now();
-  for (const r of reminders) {
-    if (new Date(r.fireAt).getTime() <= now) {
-      await self.registration.showNotification(r.title, {
-        body: r.body, icon: '/icon.svg', badge: '/icon.svg',
-        tag: r.noteId, renotify: false, requireInteraction: false,
-      });
-      await deleteReminder(r.noteId);
-    }
-  }
-}
-
-self.addEventListener('sync', e => {
-  if (e.tag === 'check-reminders') e.waitUntil(checkAndFireReminders());
-});
-
-self.addEventListener('periodicsync', e => {
-  if (e.tag === 'check-reminders-periodic') e.waitUntil(checkAndFireReminders());
-});
-
-self.addEventListener('message', async (event) => {
+// ---- הודעות מהאפליקציה ----
+self.addEventListener('message', async event => {
   const { type, payload } = event.data || {};
+  if (!type || !payload) return;
 
   if (type === 'SCHEDULE_REMINDER' || type === 'SCHEDULE_WEEKLY') {
     const { noteId, title, body, fireAt } = payload;
-    const id = noteId || 'weekly-reminder';
-    if (new Date(fireAt).getTime() <= Date.now()) return;
-    await saveReminder({ noteId: id, title, body, fireAt });
+    const id = noteId || 'weekly';
     const delay = new Date(fireAt).getTime() - Date.now();
+    if (delay <= 0) return;
+    await saveReminder({ noteId: id, title, body, fireAt });
     setTimeout(async () => {
       await self.registration.showNotification(title, {
-        body, icon: '/icon.svg', badge: '/icon.svg',
-        tag: id, renotify: type === 'SCHEDULE_WEEKLY',
+        body, icon: '/icon.svg', tag: id, renotify: false,
       });
       await deleteReminder(id);
     }, delay);
-    try { await self.registration.sync.register('check-reminders'); } catch(_) {}
   }
 
   if (type === 'CANCEL_REMINDER') {
