@@ -21,10 +21,10 @@ const DEFAULT_TARGET_DATE = new Date(2026, 5, 11);
 
 // All dates verified against the Hebrew calendar for year 5786 (2025–2026)
 const HOLIDAYS: { name: string; start: Date; end: Date; type: 'holiday' | 'fast' | 'other' }[] = [
-  { name: "חופשת פסח",           start: new Date(2026,  2, 31), end: new Date(2026,  3,  9), type: 'holiday' },  // 14–22 Nisan
+  { name: "חופשת פסח",           start: new Date(2026,  2, 31), end: new Date(2026,  3,  8), type: 'holiday' },  // 14–21 Nisan
   { name: "יום העצמאות",         start: new Date(2026,  3, 22), end: new Date(2026,  3, 22), type: 'holiday' },  // 5 Iyar
   { name: 'ל"ג בעומר',           start: new Date(2026,  4,  5), end: new Date(2026,  4,  5), type: 'holiday' },  // 18 Iyar
-  { name: "שבועות",              start: new Date(2026,  4, 22), end: new Date(2026,  4, 23), type: 'holiday' },  // 6–7 Sivan
+  { name: "שבועות",              start: new Date(2026,  4, 21), end: new Date(2026,  4, 21), type: 'holiday' },  // 6 Sivan
 ];
 
 // תאריכים שמוצגים בלוח אבל לא משפיעים על חישוב ימי עבודה/חופשה
@@ -283,10 +283,10 @@ interface Theme {
 }
 
 const THEMES: Theme[] = [
-  { id: 'pink',   name: 'ורוד קלאסי', bg: 'bg-[#fff5f7]', primary: 'text-[#d81b60]', secondary: 'text-pink-400',   accent: 'bg-pink-100',    cardBg: 'bg-pink-50',      cardBorder: 'border-pink-100',   gradient: 'from-pink-500 to-purple-500',     headerGradient: 'from-[#d81b60] to-[#ec407a]',   progressGradient: 'from-pink-400 via-purple-400 to-blue-400',       iconColor: 'text-pink-500',   buttonBg: 'bg-pink-100',   buttonText: 'text-[#d81b60]',  hasidicDot: 'border-[#b39ddb]', notesDot: 'border-[#ba68c8]', hasidicBorder: 'border-[#c5b0e8]', notesNumColor: 'text-[#ab47bc]' },
-  { id: 'blue',   name: 'כחול שמיים', bg: 'bg-[#f0f7ff]', primary: 'text-[#5c92d1]', secondary: 'text-blue-300',   accent: 'bg-blue-50',     cardBg: 'bg-blue-50/50',   cardBorder: 'border-blue-100',   gradient: 'from-blue-400 to-indigo-300',     headerGradient: 'from-[#5c92d1] to-[#8eb9eb]',   progressGradient: 'from-blue-300 via-indigo-200 to-purple-200',     iconColor: 'text-blue-400',   buttonBg: 'bg-blue-50',    buttonText: 'text-[#5c92d1]',  hasidicDot: 'border-[#90caf9]', notesDot: 'border-[#5c6bc0]', hasidicBorder: 'border-[#90b8e8]', notesNumColor: 'text-[#3f6fc7]' },
-  { id: 'green',  name: 'ירוק טבע',   bg: 'bg-[#f2fcf5]', primary: 'text-[#6db388]', secondary: 'text-green-300',  accent: 'bg-green-50',    cardBg: 'bg-green-50/50',  cardBorder: 'border-green-100',  gradient: 'from-green-400 to-teal-300',      headerGradient: 'from-[#6db388] to-[#a3d9b9]',   progressGradient: 'from-green-300 via-teal-200 to-emerald-200',     iconColor: 'text-green-400',  buttonBg: 'bg-green-50',   buttonText: 'text-[#6db388]',  hasidicDot: 'border-[#80cbc4]', notesDot: 'border-[#26a69a]', hasidicBorder: 'border-[#80c9a0]', notesNumColor: 'text-[#2e9e7a]' },
-  { id: 'sunset', name: 'שקיעה רכה', bg: 'bg-[#fffaf5]', primary: 'text-[#e59a7d]', secondary: 'text-orange-300', accent: 'bg-orange-50',   cardBg: 'bg-orange-50/50', cardBorder: 'border-orange-100', gradient: 'from-orange-300 to-rose-300',     headerGradient: 'from-[#e59a7d] to-[#ffc4ae]',   progressGradient: 'from-orange-200 via-rose-200 to-pink-200',       iconColor: 'text-orange-400', buttonBg: 'bg-orange-50',  buttonText: 'text-[#e59a7d]',  hasidicDot: 'border-[#ffcc80]', notesDot: 'border-[#e57373]', hasidicBorder: 'border-[#f0b89a]', notesNumColor: 'text-[#d4845a]' },
+  { id: 'pink',   name: 'ורוד קלאסי', bg: 'bg-[#fff5f7]', primary: 'text-[#d81b60]', secondary: 'text-pink-400',   accent: 'bg-pink-100',    cardBg: 'bg-pink-50',      cardBorder: 'border-pink-100',   gradient: 'from-pink-500 to-purple-500',     headerGradient: 'from-[#d81b60] to-[#ec407a]',   progressGradient: 'from-pink-400 via-purple-400 to-blue-400',       iconColor: 'text-pink-500',   buttonBg: 'bg-pink-100',   buttonText: 'text-[#d81b60]',  hasidicDot: 'border-[#b39ddb]', notesDot: 'border-[#ba68c8]', hasidicBorder: 'border-[#b8a0e0]', notesNumColor: 'text-[#9c6fc0]' },
+  { id: 'blue',   name: 'כחול שמיים', bg: 'bg-[#f0f7ff]', primary: 'text-[#5c92d1]', secondary: 'text-blue-300',   accent: 'bg-blue-50',     cardBg: 'bg-blue-50/50',   cardBorder: 'border-blue-100',   gradient: 'from-blue-400 to-indigo-300',     headerGradient: 'from-[#5c92d1] to-[#8eb9eb]',   progressGradient: 'from-blue-300 via-indigo-200 to-purple-200',     iconColor: 'text-blue-400',   buttonBg: 'bg-blue-50',    buttonText: 'text-[#5c92d1]',  hasidicDot: 'border-[#90caf9]', notesDot: 'border-[#5c6bc0]', hasidicBorder: 'border-[#80aadf]', notesNumColor: 'text-[#4d7fd4]' },
+  { id: 'green',  name: 'ירוק טבע',   bg: 'bg-[#f2fcf5]', primary: 'text-[#6db388]', secondary: 'text-green-300',  accent: 'bg-green-50',    cardBg: 'bg-green-50/50',  cardBorder: 'border-green-100',  gradient: 'from-green-400 to-teal-300',      headerGradient: 'from-[#6db388] to-[#a3d9b9]',   progressGradient: 'from-green-300 via-teal-200 to-emerald-200',     iconColor: 'text-green-400',  buttonBg: 'bg-green-50',   buttonText: 'text-[#6db388]',  hasidicDot: 'border-[#80cbc4]', notesDot: 'border-[#26a69a]', hasidicBorder: 'border-[#68c095]', notesNumColor: 'text-[#3aaa82]' },
+  { id: 'sunset', name: 'שקיעה רכה', bg: 'bg-[#fffaf5]', primary: 'text-[#e59a7d]', secondary: 'text-orange-300', accent: 'bg-orange-50',   cardBg: 'bg-orange-50/50', cardBorder: 'border-orange-100', gradient: 'from-orange-300 to-rose-300',     headerGradient: 'from-[#e59a7d] to-[#ffc4ae]',   progressGradient: 'from-orange-200 via-rose-200 to-pink-200',       iconColor: 'text-orange-400', buttonBg: 'bg-orange-50',  buttonText: 'text-[#e59a7d]',  hasidicDot: 'border-[#ffcc80]', notesDot: 'border-[#e57373]', hasidicBorder: 'border-[#e8a080]', notesNumColor: 'text-[#d4845a]' },
 ];
 
 async function requestNotificationPermission(): Promise<boolean> {
@@ -966,31 +966,31 @@ function LegendItem({ color, borderColor, label, theme }: { color: string; borde
 const DaySquare: React.FC<{ day: DayData; targetDate: Date; theme: Theme; hasNotes: boolean; onClick: () => void }> =
   ({ day, targetDate, theme, hasNotes, onClick }) => {
     let bgColor = "bg-white", borderColor = "border-gray-100";
-    if (day.isVacation || day.holidayInfo) { bgColor = "bg-[#fce4ec]"; borderColor = "border-[#f06292]"; }
-    else if (day.isWorkday) { bgColor = "bg-[#fff9c4]"; borderColor = "border-[#ffd54f]"; }
-    else if (day.isWeekend) { bgColor = "bg-[#e3f2fd]"; borderColor = "border-[#64b5f6]"; }
+    if (day.isVacation || day.holidayInfo) { bgColor = "bg-[#fce8f0]"; borderColor = "border-[#f5b8d0]"; }
+    else if (day.isWorkday) { bgColor = "bg-[#fffbe6]"; borderColor = "border-[#f5e090]"; }
+    else if (day.isWeekend) { bgColor = "bg-[#eef4ff]"; borderColor = "border-[#c5d8f8]"; }
     // תאריך חסידי — גבול מיוחד תמיד, גם על חופשה/סופ"ש (רקע נשאר כמו שהוא)
     if (day.hasidicEvent) { borderColor = theme.hasidicBorder; }
     if (day.isToday) borderColor = "border-[#4caf50] border-[2px]";
 
-    const dayNumColor = hasNotes ? theme.notesNumColor : "text-gray-400";
+    const dayNumColor = hasNotes ? theme.notesNumColor : "text-gray-500";
 
     return (
       <button onClick={onClick} className={`aspect-square rounded-xl border-2 ${borderColor} ${bgColor} flex flex-col items-center justify-center p-0.5 relative overflow-hidden shadow-sm active:scale-95 transition-transform cursor-pointer ${day.date > targetDate ? 'opacity-10 grayscale' : ''}`}>
         <div className={`flex flex-col items-center justify-center -space-y-0.5 w-full ${(day.holidayInfo || day.isVacation) ? 'mb-2' : ''}`}>
-          <span className={`text-[10px] font-bold leading-tight ${dayNumColor}`}>{day.dayOfMonth}</span>
-          <span className={`text-[8px] font-medium ${theme.secondary} leading-tight truncate max-w-full px-0.5`}>{day.hebrewDate}</span>
+          <span className={`text-[9px] font-semibold leading-tight ${dayNumColor}`}>{day.dayOfMonth}</span>
+          <span className="text-[7px] font-medium text-gray-300 leading-tight truncate max-w-full px-0.5">{day.hebrewDate}</span>
           {day.countdown != null && (
-            <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }} className="text-[12px] font-black text-[#fbc02d] leading-none mt-0.5">{day.countdown}</motion.span>
+            <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }} className="text-[11px] font-bold text-[#e8b84b] leading-none mt-0.5">{day.countdown}</motion.span>
           )}
         </div>
         {/* Holiday / vacation banner at bottom */}
         {(day.holidayInfo || day.isVacation) && (
-          <div className="absolute bottom-0 left-0 right-0 bg-[#f06292] text-white text-[5px] text-center py-0.5 font-black truncate px-0.5 leading-none">{day.holidayInfo?.name ?? 'חופשה'}</div>
+          <div className="absolute bottom-0 left-0 right-0 bg-[#f0a0bf]/80 text-white text-[5px] text-center py-0.5 font-semibold truncate px-0.5 leading-none">{day.holidayInfo?.name ?? 'חופשה'}</div>
         )}
         {/* Calendar event banner — gray, not a holiday */}
         {day.calendarEvent && !day.holidayInfo && !day.isVacation && (
-          <div className="absolute bottom-0 left-0 right-0 bg-gray-300 text-gray-600 text-[5px] text-center py-0.5 font-black truncate px-0.5 leading-none">{day.calendarEvent}</div>
+          <div className="absolute bottom-0 left-0 right-0 bg-gray-200 text-gray-400 text-[5px] text-center py-0.5 font-bold truncate px-0.5 leading-none">{day.calendarEvent}</div>
         )}
         {day.isToday && <div className="absolute top-0.5 right-0.5"><Sparkles size={6} className="text-[#4caf50]" /></div>}
       </button>
