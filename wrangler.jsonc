@@ -1,0 +1,7 @@
+{
+  "name": "bdikat-luach",
+  "compatibility_date": "2026-03-15",
+  "assets": {
+    "directory": "./dist"
+  }
+}
