@@ -284,6 +284,20 @@ async function requestNotificationPermission(): Promise<boolean> {
   return result === 'granted';
 }
 
+function getNoteType(text: string): { emoji: string; label: string } {
+  const lower = text.trim();
+  // Simple heuristics: ends with ? or contains task-like words = משימה, else הערה
+  const taskWords = ['לקנות', 'לעשות', 'לסיים', 'לשלוח', 'לבדוק', 'לקרוא', 'להכין', 'לשלם', 'לתאם', 'לזמן', 'לפנות'];
+  const isTask = taskWords.some(w => lower.includes(w)) || lower.endsWith('?') || lower.startsWith('✓') || lower.startsWith('-');
+  return isTask ? { emoji: '✅', label: 'משימה' } : { emoji: '📝', label: 'הערה' };
+}
+
+function formatHebrewDate(dateKey: string): string {
+  const [y, m, d] = dateKey.split('-').map(Number);
+  const date = new Date(y, m - 1, d);
+  return date.toLocaleDateString('he-IL', { weekday: 'long', day: 'numeric', month: 'long' });
+}
+
 function scheduleReminder(note: Note, dateLabel: string) {
   if (!note.reminderEnabled || !note.reminderTime) return;
   if (!('Notification' in window)) return;
@@ -293,7 +307,16 @@ function scheduleReminder(note: Note, dateLabel: string) {
   if (target <= now) target.setDate(target.getDate() + 1);
   const delay = target.getTime() - now.getTime();
   setTimeout(() => {
-    if (Notification.permission === 'granted') new Notification(`תזכורת: ${dateLabel}`, { body: note.text, icon: '/icon.svg' });
+    if (Notification.permission === 'granted') {
+      const { emoji, label } = getNoteType(note.text);
+      const friendlyDate = formatHebrewDate(dateLabel);
+      new Notification(`${emoji} תזכורת ${label} — ${friendlyDate}`, {
+        body: note.text,
+        icon: '/icon.svg',
+        tag: `reminder-${note.id}`,
+        silent: false,
+      });
+    }
   }, delay);
 }
 
@@ -350,7 +373,12 @@ export default function App() {
         const total = Math.ceil((targetDate.getTime() - startDate.getTime()) / 86400000);
         const passed = total - remaining;
         const pct = total > 0 ? Math.round((passed / total) * 100) : 0;
-        new Notification('📅 עדכון שבועי - ספירה לאחור', { body: `עוד ${remaining} ימים לחופשה! עברו ${pct}% מהמסע.`, icon: '/icon.svg' });
+        new Notification('📅 עדכון שבועי — ספירה לאחור לחופשת לידה', {
+          body: `נשארו ${remaining} ימים לחופשה! 🍼\nעברת ${pct}% מהדרך — כל הכבוד! 💪`,
+          icon: '/icon.svg',
+          tag: 'weekly-update',
+          silent: false,
+        });
       }
     }, delay);
     return () => clearTimeout(timer);
@@ -369,8 +397,10 @@ export default function App() {
     // Send push notification if allowed
     if (Notification.permission === 'granted') {
       new Notification('🎉 היום הגדול הגיע!', {
-        body: 'מזל טוב! היום יום האחרון בעבודה — מתחילה ההרפתקה הכי יפה! 🍼💕',
+        body: 'מזל טוב! היום יום האחרון בעבודה 🥳\nמתחילה ההרפתקה הכי יפה בחיים! 👶🍼💕',
         icon: '/icon.svg',
+        tag: 'celebration',
+        silent: false,
       });
     }
 
