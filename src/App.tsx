@@ -267,14 +267,14 @@ interface Theme {
   id: string; name: string; bg: string; primary: string; secondary: string;
   accent: string; cardBg: string; cardBorder: string; gradient: string;
   headerGradient: string; progressGradient: string; iconColor: string;
-  buttonBg: string; buttonText: string;
+  buttonBg: string; buttonText: string; hasidicDot: string; notesDot: string;
 }
 
 const THEMES: Theme[] = [
-  { id: 'pink', name: 'ורוד קלאסי', bg: 'bg-[#fff5f7]', primary: 'text-[#d81b60]', secondary: 'text-pink-400', accent: 'bg-pink-100', cardBg: 'bg-pink-50', cardBorder: 'border-pink-100', gradient: 'from-pink-500 to-purple-500', headerGradient: 'from-[#d81b60] to-[#ec407a]', progressGradient: 'from-pink-400 via-purple-400 to-blue-400', iconColor: 'text-pink-500', buttonBg: 'bg-pink-100', buttonText: 'text-[#d81b60]' },
-  { id: 'blue', name: 'כחול שמיים', bg: 'bg-[#f0f7ff]', primary: 'text-[#5c92d1]', secondary: 'text-blue-300', accent: 'bg-blue-50', cardBg: 'bg-blue-50/50', cardBorder: 'border-blue-100', gradient: 'from-blue-400 to-indigo-300', headerGradient: 'from-[#5c92d1] to-[#8eb9eb]', progressGradient: 'from-blue-300 via-indigo-200 to-purple-200', iconColor: 'text-blue-400', buttonBg: 'bg-blue-50', buttonText: 'text-[#5c92d1]' },
-  { id: 'green', name: 'ירוק טבע', bg: 'bg-[#f2fcf5]', primary: 'text-[#6db388]', secondary: 'text-green-300', accent: 'bg-green-50', cardBg: 'bg-green-50/50', cardBorder: 'border-green-100', gradient: 'from-green-400 to-teal-300', headerGradient: 'from-[#6db388] to-[#a3d9b9]', progressGradient: 'from-green-300 via-teal-200 to-emerald-200', iconColor: 'text-green-400', buttonBg: 'bg-green-50', buttonText: 'text-[#6db388]' },
-  { id: 'sunset', name: 'שקיעה רכה', bg: 'bg-[#fffaf5]', primary: 'text-[#e59a7d]', secondary: 'text-orange-300', accent: 'bg-orange-50', cardBg: 'bg-orange-50/50', cardBorder: 'border-orange-100', gradient: 'from-orange-300 to-rose-300', headerGradient: 'from-[#e59a7d] to-[#ffc4ae]', progressGradient: 'from-orange-200 via-rose-200 to-pink-200', iconColor: 'text-orange-400', buttonBg: 'bg-orange-50', buttonText: 'text-[#e59a7d]' },
+  { id: 'pink',   name: 'ורוד קלאסי', bg: 'bg-[#fff5f7]', primary: 'text-[#d81b60]', secondary: 'text-pink-400',   accent: 'bg-pink-100',    cardBg: 'bg-pink-50',      cardBorder: 'border-pink-100',   gradient: 'from-pink-500 to-purple-500',     headerGradient: 'from-[#d81b60] to-[#ec407a]',   progressGradient: 'from-pink-400 via-purple-400 to-blue-400',       iconColor: 'text-pink-500',   buttonBg: 'bg-pink-100',   buttonText: 'text-[#d81b60]',  hasidicDot: 'border-[#b39ddb]', notesDot: 'border-[#f48fb1]' },
+  { id: 'blue',   name: 'כחול שמיים', bg: 'bg-[#f0f7ff]', primary: 'text-[#5c92d1]', secondary: 'text-blue-300',   accent: 'bg-blue-50',     cardBg: 'bg-blue-50/50',   cardBorder: 'border-blue-100',   gradient: 'from-blue-400 to-indigo-300',     headerGradient: 'from-[#5c92d1] to-[#8eb9eb]',   progressGradient: 'from-blue-300 via-indigo-200 to-purple-200',     iconColor: 'text-blue-400',   buttonBg: 'bg-blue-50',    buttonText: 'text-[#5c92d1]',  hasidicDot: 'border-[#90caf9]', notesDot: 'border-[#a5b4fc]' },
+  { id: 'green',  name: 'ירוק טבע',   bg: 'bg-[#f2fcf5]', primary: 'text-[#6db388]', secondary: 'text-green-300',  accent: 'bg-green-50',    cardBg: 'bg-green-50/50',  cardBorder: 'border-green-100',  gradient: 'from-green-400 to-teal-300',      headerGradient: 'from-[#6db388] to-[#a3d9b9]',   progressGradient: 'from-green-300 via-teal-200 to-emerald-200',     iconColor: 'text-green-400',  buttonBg: 'bg-green-50',   buttonText: 'text-[#6db388]',  hasidicDot: 'border-[#80cbc4]', notesDot: 'border-[#a5d6a7]' },
+  { id: 'sunset', name: 'שקיעה רכה', bg: 'bg-[#fffaf5]', primary: 'text-[#e59a7d]', secondary: 'text-orange-300', accent: 'bg-orange-50',   cardBg: 'bg-orange-50/50', cardBorder: 'border-orange-100', gradient: 'from-orange-300 to-rose-300',     headerGradient: 'from-[#e59a7d] to-[#ffc4ae]',   progressGradient: 'from-orange-200 via-rose-200 to-pink-200',       iconColor: 'text-orange-400', buttonBg: 'bg-orange-50',  buttonText: 'text-[#e59a7d]',  hasidicDot: 'border-[#ffcc80]', notesDot: 'border-[#f48fb1]' },
 ];
 
 async function requestNotificationPermission(): Promise<boolean> {
@@ -939,12 +939,12 @@ const DaySquare: React.FC<{ day: DayData; targetDate: Date; theme: Theme; hasNot
         {(day.holidayInfo || day.isVacation) && (
           <div className="absolute bottom-0 left-0 right-0 bg-[#f06292] text-white text-[5px] text-center py-0.5 font-black truncate px-0.5 leading-none">{day.holidayInfo?.name ?? 'חופשה'}</div>
         )}
-        {/* Hasidic event dot — top-left corner, full text shown on click in modal */}
+        {/* Hasidic event dot — subtle ring, top-left corner */}
         {day.hasidicEvent && (
-          <div className="absolute top-0.5 left-0.5 w-2 h-2 bg-[#43a047] rounded-full shadow-sm border border-white" />
+          <div className={`absolute top-0.5 left-0.5 w-1.5 h-1.5 rounded-full border ${theme.hasidicDot} opacity-50`} />
         )}
         {day.isToday && <div className="absolute top-0.5 right-0.5"><Sparkles size={6} className="text-[#4caf50]" /></div>}
-        {hasNotes && <div className="absolute bottom-0.5 right-0.5 w-2 h-2 bg-blue-400 rounded-full" />}
+        {hasNotes && <div className={`absolute bottom-0.5 right-0.5 w-1.5 h-1.5 rounded-full border ${theme.notesDot} opacity-50`} />}
       </button>
     );
   };
