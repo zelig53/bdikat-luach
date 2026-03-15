@@ -928,7 +928,7 @@ const DaySquare: React.FC<{ day: DayData; targetDate: Date; theme: Theme; hasNot
 
     return (
       <button onClick={onClick} className={`aspect-square rounded-xl border ${borderColor} ${bgColor} flex flex-col items-center justify-center p-0.5 relative overflow-hidden shadow-sm active:scale-95 transition-transform cursor-pointer ${day.date > targetDate ? 'opacity-10 grayscale' : ''}`}>
-        <div className={`flex flex-col items-center justify-center -space-y-0.5 ${(day.holidayInfo || day.isVacation) ? 'mb-2' : ''}`}>
+        <div className={`flex flex-col items-center justify-center -space-y-0.5 w-full ${(day.holidayInfo || day.isVacation) ? 'mb-2' : ''} ${day.hasidicEvent ? 'pr-1.5' : ''}`}>
           <span className="text-[10px] font-bold text-gray-400 leading-tight">{day.dayOfMonth}</span>
           <span className={`text-[8px] font-medium ${theme.secondary} leading-tight truncate max-w-full px-0.5`}>{day.hebrewDate}</span>
           {day.countdown != null && (
@@ -939,12 +939,12 @@ const DaySquare: React.FC<{ day: DayData; targetDate: Date; theme: Theme; hasNot
         {(day.holidayInfo || day.isVacation) && (
           <div className="absolute bottom-0 left-0 right-0 bg-[#f06292] text-white text-[5px] text-center py-0.5 font-black truncate px-0.5 leading-none">{day.holidayInfo?.name ?? 'חופשה'}</div>
         )}
-        {/* Hasidic event dot — only shown as dot, full text shown on click in modal */}
+        {/* Hasidic event dot — top-left corner, full text shown on click in modal */}
         {day.hasidicEvent && (
-          <div className={`absolute left-1 w-2 h-2 bg-[#43a047] rounded-full shadow-sm border border-white ${(day.holidayInfo || day.isVacation) ? 'bottom-4' : 'bottom-1'}`} />
+          <div className="absolute top-0.5 left-0.5 w-2 h-2 bg-[#43a047] rounded-full shadow-sm border border-white" />
         )}
         {day.isToday && <div className="absolute top-0.5 right-0.5"><Sparkles size={6} className="text-[#4caf50]" /></div>}
-        {hasNotes && <div className="absolute top-0.5 left-0.5 w-2 h-2 bg-blue-400 rounded-full" />}
+        {hasNotes && <div className="absolute bottom-0.5 right-0.5 w-2 h-2 bg-blue-400 rounded-full" />}
       </button>
     );
   };
