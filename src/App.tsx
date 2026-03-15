@@ -267,14 +267,14 @@ interface Theme {
   id: string; name: string; bg: string; primary: string; secondary: string;
   accent: string; cardBg: string; cardBorder: string; gradient: string;
   headerGradient: string; progressGradient: string; iconColor: string;
-  buttonBg: string; buttonText: string;
+  buttonBg: string; buttonText: string; hasidicDot: string; notesDot: string;
 }
 
 const THEMES: Theme[] = [
-  { id: 'pink', name: 'ורוד קלאסי', bg: 'bg-[#fff5f7]', primary: 'text-[#d81b60]', secondary: 'text-pink-400', accent: 'bg-pink-100', cardBg: 'bg-pink-50', cardBorder: 'border-pink-100', gradient: 'from-pink-500 to-purple-500', headerGradient: 'from-[#d81b60] to-[#ec407a]', progressGradient: 'from-pink-400 via-purple-400 to-blue-400', iconColor: 'text-pink-500', buttonBg: 'bg-pink-100', buttonText: 'text-[#d81b60]' },
-  { id: 'blue', name: 'כחול שמיים', bg: 'bg-[#f0f7ff]', primary: 'text-[#5c92d1]', secondary: 'text-blue-300', accent: 'bg-blue-50', cardBg: 'bg-blue-50/50', cardBorder: 'border-blue-100', gradient: 'from-blue-400 to-indigo-300', headerGradient: 'from-[#5c92d1] to-[#8eb9eb]', progressGradient: 'from-blue-300 via-indigo-200 to-purple-200', iconColor: 'text-blue-400', buttonBg: 'bg-blue-50', buttonText: 'text-[#5c92d1]' },
-  { id: 'green', name: 'ירוק טבע', bg: 'bg-[#f2fcf5]', primary: 'text-[#6db388]', secondary: 'text-green-300', accent: 'bg-green-50', cardBg: 'bg-green-50/50', cardBorder: 'border-green-100', gradient: 'from-green-400 to-teal-300', headerGradient: 'from-[#6db388] to-[#a3d9b9]', progressGradient: 'from-green-300 via-teal-200 to-emerald-200', iconColor: 'text-green-400', buttonBg: 'bg-green-50', buttonText: 'text-[#6db388]' },
-  { id: 'sunset', name: 'שקיעה רכה', bg: 'bg-[#fffaf5]', primary: 'text-[#e59a7d]', secondary: 'text-orange-300', accent: 'bg-orange-50', cardBg: 'bg-orange-50/50', cardBorder: 'border-orange-100', gradient: 'from-orange-300 to-rose-300', headerGradient: 'from-[#e59a7d] to-[#ffc4ae]', progressGradient: 'from-orange-200 via-rose-200 to-pink-200', iconColor: 'text-orange-400', buttonBg: 'bg-orange-50', buttonText: 'text-[#e59a7d]' },
+  { id: 'pink',   name: 'ורוד קלאסי', bg: 'bg-[#fff5f7]', primary: 'text-[#d81b60]', secondary: 'text-pink-400',   accent: 'bg-pink-100',    cardBg: 'bg-pink-50',      cardBorder: 'border-pink-100',   gradient: 'from-pink-500 to-purple-500',     headerGradient: 'from-[#d81b60] to-[#ec407a]',   progressGradient: 'from-pink-400 via-purple-400 to-blue-400',       iconColor: 'text-pink-500',   buttonBg: 'bg-pink-100',   buttonText: 'text-[#d81b60]',  hasidicDot: 'border-[#b39ddb]', notesDot: 'bg-[#ce93d8]' },
+  { id: 'blue',   name: 'כחול שמיים', bg: 'bg-[#f0f7ff]', primary: 'text-[#5c92d1]', secondary: 'text-blue-300',   accent: 'bg-blue-50',     cardBg: 'bg-blue-50/50',   cardBorder: 'border-blue-100',   gradient: 'from-blue-400 to-indigo-300',     headerGradient: 'from-[#5c92d1] to-[#8eb9eb]',   progressGradient: 'from-blue-300 via-indigo-200 to-purple-200',     iconColor: 'text-blue-400',   buttonBg: 'bg-blue-50',    buttonText: 'text-[#5c92d1]',  hasidicDot: 'border-[#90caf9]', notesDot: 'bg-[#7986cb]' },
+  { id: 'green',  name: 'ירוק טבע',   bg: 'bg-[#f2fcf5]', primary: 'text-[#6db388]', secondary: 'text-green-300',  accent: 'bg-green-50',    cardBg: 'bg-green-50/50',  cardBorder: 'border-green-100',  gradient: 'from-green-400 to-teal-300',      headerGradient: 'from-[#6db388] to-[#a3d9b9]',   progressGradient: 'from-green-300 via-teal-200 to-emerald-200',     iconColor: 'text-green-400',  buttonBg: 'bg-green-50',   buttonText: 'text-[#6db388]',  hasidicDot: 'border-[#80cbc4]', notesDot: 'bg-[#4db6ac]' },
+  { id: 'sunset', name: 'שקיעה רכה', bg: 'bg-[#fffaf5]', primary: 'text-[#e59a7d]', secondary: 'text-orange-300', accent: 'bg-orange-50',   cardBg: 'bg-orange-50/50', cardBorder: 'border-orange-100', gradient: 'from-orange-300 to-rose-300',     headerGradient: 'from-[#e59a7d] to-[#ffc4ae]',   progressGradient: 'from-orange-200 via-rose-200 to-pink-200',       iconColor: 'text-orange-400', buttonBg: 'bg-orange-50',  buttonText: 'text-[#e59a7d]',  hasidicDot: 'border-[#ffcc80]', notesDot: 'bg-[#ef9a9a]' },
 ];
 
 async function requestNotificationPermission(): Promise<boolean> {
@@ -314,18 +314,32 @@ async function showNotification(title: string, body: string, tag?: string) {
   }
 }
 
-function scheduleReminder(note: Note, dateKey: string) {
+async function scheduleReminder(note: Note, key: string) {
   if (!note.reminderEnabled || !note.reminderTime) return;
   if (!('Notification' in window) || Notification.permission !== 'granted') return;
   const [h, m] = note.reminderTime.split(':').map(Number);
-  const fireAt = new Date(`${dateKey}T${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:00`);
+  const fireAt = new Date(`${key}T${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:00`);
   const delay = fireAt.getTime() - Date.now();
   if (delay <= 0) return;
+
   const typeLabel = note.type === 'task' ? '✅ משימה' : '📝 הערה';
-  const [year, month, day] = dateKey.split('-');
+  const [year, month, day] = key.split('-');
   const dateLabel = `${day}/${month}/${year}`;
+  const title = `${typeLabel} — ${dateLabel}`;
+
+  // נסה לשלוח ל-SW (שורד סגירת הדפדפן)
+  const reg = await getCustomSW();
+  if (reg?.active) {
+    reg.active.postMessage({
+      type: 'SCHEDULE_REMINDER',
+      payload: { noteId: note.id, title, body: note.text, fireAt: fireAt.toISOString() },
+    });
+    return;
+  }
+
+  // fallback — setTimeout (עובד רק כשהדפדפן פתוח)
   setTimeout(() => {
-    showNotification(`${typeLabel} — ${dateLabel}`, note.text, note.id);
+    showNotification(title, note.text, note.id);
   }, delay);
 }
 
@@ -487,16 +501,22 @@ export default function App() {
     if (reminderEnabled) scheduleReminder(note, key);
   }, []);
 
-  const deleteNote = useCallback((key: string, noteId: string) => {
+  const deleteNote = useCallback(async (key: string, noteId: string) => {
     setDayExtras(prev => { const cur = prev[key] || { notes: [] }; return { ...prev, [key]: { ...cur, notes: cur.notes.filter(n => n.id !== noteId) } }; });
+    // בטל תזכורת ב-SW אם קיימת
+    const reg = await getCustomSW();
+    reg?.active?.postMessage({ type: 'CANCEL_REMINDER', payload: { noteId } });
   }, []);
 
-  const editNote = useCallback((key: string, noteId: string, text: string, type: 'note' | 'task', reminderTime: string, reminderEnabled: boolean) => {
+  const editNote = useCallback(async (key: string, noteId: string, text: string, type: 'note' | 'task', reminderTime: string, reminderEnabled: boolean) => {
     setDayExtras(prev => {
       const cur = prev[key] || { notes: [] };
       const updated = cur.notes.map(n => n.id === noteId ? { ...n, text, type, reminderTime, reminderEnabled } : n);
       return { ...prev, [key]: { ...cur, notes: updated } };
     });
+    // בטל תזכורת ישנה תמיד, ואז קבע מחדש אם צריך
+    const reg = await getCustomSW();
+    reg?.active?.postMessage({ type: 'CANCEL_REMINDER', payload: { noteId } });
     if (reminderEnabled) {
       const note: Note = { id: noteId, text, type, reminderTime, reminderEnabled };
       scheduleReminder(note, key);
@@ -939,12 +959,12 @@ const DaySquare: React.FC<{ day: DayData; targetDate: Date; theme: Theme; hasNot
         {(day.holidayInfo || day.isVacation) && (
           <div className="absolute bottom-0 left-0 right-0 bg-[#f06292] text-white text-[5px] text-center py-0.5 font-black truncate px-0.5 leading-none">{day.holidayInfo?.name ?? 'חופשה'}</div>
         )}
-        {/* Hasidic event dot — top-left corner, full text shown on click in modal */}
+        {/* Hasidic event dot — subtle ring, top-left corner */}
         {day.hasidicEvent && (
-          <div className="absolute top-0.5 left-0.5 w-2 h-2 bg-[#43a047] rounded-full shadow-sm border border-white" />
+          <div className={`absolute top-0.5 left-0.5 w-1.5 h-1.5 rounded-full border ${theme.hasidicDot} opacity-50`} />
         )}
         {day.isToday && <div className="absolute top-0.5 right-0.5"><Sparkles size={6} className="text-[#4caf50]" /></div>}
-        {hasNotes && <div className="absolute bottom-0.5 right-0.5 w-2 h-2 bg-blue-400 rounded-full" />}
+        {hasNotes && <div className={`absolute bottom-0.5 right-0.5 w-2 h-2 rounded-full ${theme.notesDot} opacity-80`} />}
       </button>
     );
   };
