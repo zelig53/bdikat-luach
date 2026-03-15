@@ -8,7 +8,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import {
   Baby, PartyPopper, Info, Sparkles, Heart, Star, Gift, Milk, Download,
   Settings, X, Calendar, Bell, BellOff, BookOpen, CheckSquare, Plus,
-  Trash2, Clock, ChevronUp, AlertCircle
+  Trash2, Clock, ChevronUp, AlertCircle, Pencil
 } from 'lucide-react';
 
 interface BeforeInstallPromptEvent extends Event {
@@ -87,7 +87,7 @@ function getHashidicEventForDate(date: Date): HasidicEvent | null {
 const isWeekend = (date: Date) => { const d = date.getDay(); return d === 5 || d === 6; };
 
 interface CustomVacation { id: string; startDate: string; endDate: string; name: string; }
-interface Note { id: string; text: string; reminderTime?: string; reminderEnabled: boolean; }
+interface Note { id: string; text: string; type: 'note' | 'task'; reminderTime?: string; reminderEnabled: boolean; }
 interface DayExtras { vacation?: boolean; notes: Note[]; }
 
 function dateKey(date: Date): string {
@@ -292,8 +292,9 @@ function scheduleReminder(note: Note, dateLabel: string) {
   const target = new Date(); target.setHours(h, m, 0, 0);
   if (target <= now) target.setDate(target.getDate() + 1);
   const delay = target.getTime() - now.getTime();
+  const typeLabel = note.type === 'task' ? '✅ משימה' : '📝 הערה';
   setTimeout(() => {
-    if (Notification.permission === 'granted') new Notification(`תזכורת: ${dateLabel}`, { body: note.text, icon: '/icon.svg' });
+    if (Notification.permission === 'granted') new Notification(`${typeLabel} — ${dateLabel}`, { body: note.text, icon: '/icon.svg' });
   }, delay);
 }
 
@@ -350,7 +351,7 @@ export default function App() {
         const total = Math.ceil((targetDate.getTime() - startDate.getTime()) / 86400000);
         const passed = total - remaining;
         const pct = total > 0 ? Math.round((passed / total) * 100) : 0;
-        new Notification('📅 עדכון שבועי - ספירה לאחור', { body: `עוד ${remaining} ימים לחופשה! עברו ${pct}% מהמסע.`, icon: '/icon.svg' });
+        new Notification('📅 תזכורת שבועית — ספירה לאחור', { body: `עוד ${remaining} ימים לחופשה! עברו ${pct}% מהמסע.`, icon: '/icon.svg' });
       }
     }, delay);
     return () => clearTimeout(timer);
@@ -422,14 +423,26 @@ export default function App() {
     setSelectedDay(prev => prev ? { ...prev, isVacation: !prev.isVacation } : prev);
   }, []);
 
-  const addNote = useCallback((key: string, text: string, reminderTime: string, reminderEnabled: boolean) => {
-    const note: Note = { id: Date.now().toString(), text, reminderTime, reminderEnabled };
+  const addNote = useCallback((key: string, text: string, type: 'note' | 'task', reminderTime: string, reminderEnabled: boolean) => {
+    const note: Note = { id: Date.now().toString(), text, type, reminderTime, reminderEnabled };
     setDayExtras(prev => { const cur = prev[key] || { notes: [] }; return { ...prev, [key]: { ...cur, notes: [...cur.notes, note] } }; });
     if (reminderEnabled) scheduleReminder(note, key);
   }, []);
 
   const deleteNote = useCallback((key: string, noteId: string) => {
     setDayExtras(prev => { const cur = prev[key] || { notes: [] }; return { ...prev, [key]: { ...cur, notes: cur.notes.filter(n => n.id !== noteId) } }; });
+  }, []);
+
+  const editNote = useCallback((key: string, noteId: string, text: string, type: 'note' | 'task', reminderTime: string, reminderEnabled: boolean) => {
+    setDayExtras(prev => {
+      const cur = prev[key] || { notes: [] };
+      const updated = cur.notes.map(n => n.id === noteId ? { ...n, text, type, reminderTime, reminderEnabled } : n);
+      return { ...prev, [key]: { ...cur, notes: updated } };
+    });
+    if (reminderEnabled) {
+      const note: Note = { id: noteId, text, type, reminderTime, reminderEnabled };
+      scheduleReminder(note, key);
+    }
   }, []);
 
   const addVacationRange = () => {
@@ -560,7 +573,8 @@ export default function App() {
               dayExtras={dayExtras[dateKey(selectedDay.date)] || { notes: [] }}
               onClose={() => setSelectedDay(null)}
               onToggleVacation={() => toggleVacation(dateKey(selectedDay.date))}
-              onAddNote={(text, time, enabled) => addNote(dateKey(selectedDay.date), text, time, enabled)}
+              onAddNote={(text, type, time, enabled) => addNote(dateKey(selectedDay.date), text, type, time, enabled)}
+              onEditNote={(id, text, type, time, enabled) => editNote(dateKey(selectedDay.date), id, text, type, time, enabled)}
               onDeleteNote={(id) => deleteNote(dateKey(selectedDay.date), id)} />
           )}
         </AnimatePresence>
@@ -632,25 +646,47 @@ export default function App() {
 function DayModal({ day, theme, dayExtras, onClose, onToggleVacation, onAddNote, onDeleteNote }: {
   day: DayData; theme: Theme; dayExtras: DayExtras;
   onClose: () => void; onToggleVacation: () => void;
-  onAddNote: (text: string, time: string, enabled: boolean) => void;
+  onAddNote: (text: string, type: 'note' | 'task', time: string, enabled: boolean) => void;
+  onEditNote: (id: string, text: string, type: 'note' | 'task', time: string, enabled: boolean) => void;
   onDeleteNote: (id: string) => void;
 }) {
   const [noteText, setNoteText] = useState('');
   const [noteTime, setNoteTime] = useState('');
+  const [noteType, setNoteType] = useState<'note' | 'task'>('note');
   const [noteReminder, setNoteReminder] = useState(false);
   const [showAddNote, setShowAddNote] = useState(false);
+  const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
   const [notifGranted, setNotifGranted] = useState(() => 'Notification' in window && Notification.permission === 'granted');
   const isVacation = dayExtras.vacation ?? false;
 
-  const handleAddNote = async () => {
+  const openEdit = (note: Note) => {
+    setEditingNoteId(note.id);
+    setNoteText(note.text);
+    setNoteType(note.type ?? 'note');
+    setNoteTime(note.reminderTime ?? '');
+    setNoteReminder(note.reminderEnabled);
+    setShowAddNote(true);
+  };
+
+  const handleSave = async () => {
     if (!noteText.trim()) return;
     if (noteReminder && !notifGranted) {
       const granted = await requestNotificationPermission();
       setNotifGranted(granted);
       if (!granted) { alert('לא ניתן לקבוע תזכורת ללא הרשאת התראות'); return; }
     }
-    onAddNote(noteText.trim(), noteTime, noteReminder);
-    setNoteText(''); setNoteTime(''); setNoteReminder(false); setShowAddNote(false);
+    if (editingNoteId) {
+      onEditNote(editingNoteId, noteText.trim(), noteType, noteTime, noteReminder);
+    } else {
+      onAddNote(noteText.trim(), noteType, noteTime, noteReminder);
+    }
+    setNoteText(''); setNoteTime(''); setNoteType('note'); setNoteReminder(false);
+    setShowAddNote(false); setEditingNoteId(null);
+  };
+
+  const handleCloseForm = () => {
+    setShowAddNote(false); setEditingNoteId(null);
+    setNoteText(''); setNoteTime(''); setNoteType('note'); setNoteReminder(false);
   };
 
   const bgColor = isVacation ? 'bg-[#fce4ec]' : day.holidayInfo ? 'bg-[#fce4ec]' : day.hasidicEvent ? 'bg-[#e8f5e9]' : day.isWeekend ? 'bg-[#e3f2fd]' : day.isWorkday ? 'bg-[#fff9c4]' : 'bg-gray-50';
@@ -691,29 +727,50 @@ function DayModal({ day, theme, dayExtras, onClose, onToggleVacation, onAddNote,
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <p className="font-black text-gray-600 text-sm flex items-center gap-1"><CheckSquare size={15} /> הערות ומשימות</p>
-              <button onClick={() => setShowAddNote(!showAddNote)} className={`text-xs font-black px-3 py-1 rounded-full ${theme.buttonBg} ${theme.buttonText} flex items-center gap-1`}>
+              <button onClick={() => showAddNote ? handleCloseForm() : setShowAddNote(true)} className={`text-xs font-black px-3 py-1 rounded-full ${theme.buttonBg} ${theme.buttonText} flex items-center gap-1`}>
                 {showAddNote ? <><ChevronUp size={13} /> סגור</> : <><Plus size={13} /> הוסף</>}
               </button>
             </div>
             <AnimatePresence>
               {showAddNote && (
                 <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className={`${theme.cardBg} rounded-2xl p-4 space-y-3 border ${theme.cardBorder} overflow-hidden`}>
-                  <textarea value={noteText} onChange={e => setNoteText(e.target.value)} placeholder="כתוב הערה או משימה..." className="w-full p-3 bg-white border border-gray-200 rounded-xl text-sm resize-none focus:outline-none min-h-[70px]" />
+                  <p className="text-xs font-black text-gray-500">{editingNoteId ? '✏️ עריכה' : '➕ הוספה חדשה'}</p>
+                  <div className="flex gap-2">
+                    <button onClick={() => setNoteType('note')} className={`flex-1 py-2 rounded-xl text-xs font-black flex items-center justify-center gap-1.5 border-2 transition-colors ${noteType === 'note' ? 'bg-blue-100 border-blue-400 text-blue-700' : 'bg-white border-gray-200 text-gray-400'}`}>
+                      📝 הערה
+                    </button>
+                    <button onClick={() => setNoteType('task')} className={`flex-1 py-2 rounded-xl text-xs font-black flex items-center justify-center gap-1.5 border-2 transition-colors ${noteType === 'task' ? 'bg-green-100 border-green-400 text-green-700' : 'bg-white border-gray-200 text-gray-400'}`}>
+                      ✅ משימה
+                    </button>
+                  </div>
+                  <textarea value={noteText} onChange={e => setNoteText(e.target.value)} placeholder={noteType === 'task' ? 'כתוב משימה...' : 'כתוב הערה...'} className="w-full p-3 bg-white border border-gray-200 rounded-xl text-sm resize-none focus:outline-none min-h-[70px]" />
                   <div className="flex items-center gap-3">
                     <label className="flex items-center gap-2 text-xs font-black text-gray-500 cursor-pointer">
                       <input type="checkbox" checked={noteReminder} onChange={e => setNoteReminder(e.target.checked)} className="rounded" /><Bell size={12} /> תזכורת
                     </label>
                     {noteReminder && <input type="time" value={noteTime} onChange={e => setNoteTime(e.target.value)} className={`flex-1 p-2 border ${theme.cardBorder} rounded-xl text-xs font-bold focus:outline-none bg-white`} />}
                   </div>
-                  <button onClick={handleAddNote} className={`w-full py-2 bg-gradient-to-r ${theme.gradient} text-white font-black rounded-xl text-sm`}>שמור</button>
+                  <button onClick={handleSave} className={`w-full py-2 bg-gradient-to-r ${theme.gradient} text-white font-black rounded-xl text-sm`}>{editingNoteId ? 'עדכן' : 'שמור'}</button>
                 </motion.div>
               )}
             </AnimatePresence>
             {(dayExtras.notes || []).length === 0 && !showAddNote && <p className="text-xs text-gray-300 text-center py-2">אין הערות עדיין</p>}
             {(dayExtras.notes || []).map(note => (
               <div key={note.id} className="bg-gray-50 rounded-xl p-3 flex items-start justify-between gap-2 border border-gray-100">
-                <div className="flex-1"><p className="text-sm text-gray-700 leading-relaxed">{note.text}</p>{note.reminderEnabled && note.reminderTime && <p className="text-[10px] text-gray-400 mt-1 flex items-center gap-1"><Clock size={10} /> תזכורת: {note.reminderTime}</p>}</div>
-                <button onClick={() => onDeleteNote(note.id)} className="text-red-300 hover:text-red-500 mt-0.5"><Trash2 size={14} /></button>
+                <div className="flex-1">
+                  <div className="flex items-center gap-1.5 mb-1">
+                    {note.type === 'task'
+                      ? <span className="text-[10px] font-black bg-green-100 text-green-700 px-2 py-0.5 rounded-full">✅ משימה</span>
+                      : <span className="text-[10px] font-black bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">📝 הערה</span>
+                    }
+                  </div>
+                  <p className="text-sm text-gray-700 leading-relaxed">{note.text}</p>
+                  {note.reminderEnabled && note.reminderTime && <p className="text-[10px] text-gray-400 mt-1 flex items-center gap-1"><Clock size={10} /> תזכורת: {note.reminderTime}</p>}
+                </div>
+                <div className="flex flex-col gap-1">
+                  <button onClick={() => openEdit(note)} className="text-blue-300 hover:text-blue-500"><Pencil size={14} /></button>
+                  <button onClick={() => onDeleteNote(note.id)} className="text-red-300 hover:text-red-500"><Trash2 size={14} /></button>
+                </div>
               </div>
             ))}
           </div>
