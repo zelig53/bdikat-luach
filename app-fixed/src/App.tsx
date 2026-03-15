@@ -209,7 +209,7 @@ function CelebrationModal({ targetDate, theme, onClose }: { targetDate: Date; th
   );
 }
 
-(date: Date, customVacations: CustomVacation[]): { name: string; type: string } | null {
+function getHolidayForDate(date: Date, customVacations: CustomVacation[]): { name: string; type: string } | null {
   const h = HOLIDAYS.find(hol => date >= hol.start && date <= hol.end);
   if (h) return { name: h.name, type: h.type };
   for (const cv of customVacations) {
