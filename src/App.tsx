@@ -21,10 +21,10 @@ const DEFAULT_TARGET_DATE = new Date(2026, 5, 11);
 
 // All dates verified against the Hebrew calendar for year 5786 (2025–2026)
 const HOLIDAYS: { name: string; start: Date; end: Date; type: 'holiday' | 'fast' | 'other' }[] = [
-  { name: "חופשת פסח",           start: new Date(2026,  2, 31), end: new Date(2026,  3,  9), type: 'holiday' },  // 14–22 Nisan
+  { name: "חופשת פסח",           start: new Date(2026,  2, 31), end: new Date(2026,  3,  8), type: 'holiday' },  // 14–21 Nisan
   { name: "יום העצמאות",         start: new Date(2026,  3, 22), end: new Date(2026,  3, 22), type: 'holiday' },  // 5 Iyar
   { name: 'ל"ג בעומר',           start: new Date(2026,  4,  5), end: new Date(2026,  4,  5), type: 'holiday' },  // 18 Iyar
-  { name: "שבועות",              start: new Date(2026,  4, 22), end: new Date(2026,  4, 23), type: 'holiday' },  // 6–7 Sivan
+  { name: "שבועות",              start: new Date(2026,  4, 21), end: new Date(2026,  4, 21), type: 'holiday' },  // 6 Sivan
 ];
 
 // תאריכים שמוצגים בלוח אבל לא משפיעים על חישוב ימי עבודה/חופשה
@@ -180,7 +180,7 @@ function CelebrationModal({ targetDate, theme, onClose }: { targetDate: Date; th
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
-              className="text-gray-600 font-bold text-base leading-relaxed"
+              className="text-[#111827] font-bold text-base leading-relaxed"
             >
               הגעת! 🌸<br />
               היום, {targetDate.toLocaleDateString('he-IL', { weekday: 'long', day: 'numeric', month: 'long' })},<br />
@@ -279,14 +279,14 @@ interface Theme {
   accent: string; cardBg: string; cardBorder: string; gradient: string;
   headerGradient: string; progressGradient: string; iconColor: string;
   buttonBg: string; buttonText: string; hasidicDot: string; notesDot: string;
-  hasidicBorder: string; notesNumColor: string;
+  hasidicBorder: string; notesNumColor: string; hebrewDateColor: string;
 }
 
 const THEMES: Theme[] = [
-  { id: 'pink',   name: 'ורוד קלאסי', bg: 'bg-[#fff5f7]', primary: 'text-[#d81b60]', secondary: 'text-pink-400',   accent: 'bg-pink-100',    cardBg: 'bg-pink-50',      cardBorder: 'border-pink-100',   gradient: 'from-pink-500 to-purple-500',     headerGradient: 'from-[#d81b60] to-[#ec407a]',   progressGradient: 'from-pink-400 via-purple-400 to-blue-400',       iconColor: 'text-pink-500',   buttonBg: 'bg-pink-100',   buttonText: 'text-[#d81b60]',  hasidicDot: 'border-[#b39ddb]', notesDot: 'border-[#ba68c8]', hasidicBorder: 'border-[#c5b0e8]', notesNumColor: 'text-[#ab47bc]' },
-  { id: 'blue',   name: 'כחול שמיים', bg: 'bg-[#f0f7ff]', primary: 'text-[#5c92d1]', secondary: 'text-blue-300',   accent: 'bg-blue-50',     cardBg: 'bg-blue-50/50',   cardBorder: 'border-blue-100',   gradient: 'from-blue-400 to-indigo-300',     headerGradient: 'from-[#5c92d1] to-[#8eb9eb]',   progressGradient: 'from-blue-300 via-indigo-200 to-purple-200',     iconColor: 'text-blue-400',   buttonBg: 'bg-blue-50',    buttonText: 'text-[#5c92d1]',  hasidicDot: 'border-[#90caf9]', notesDot: 'border-[#5c6bc0]', hasidicBorder: 'border-[#90b8e8]', notesNumColor: 'text-[#3f6fc7]' },
-  { id: 'green',  name: 'ירוק טבע',   bg: 'bg-[#f2fcf5]', primary: 'text-[#6db388]', secondary: 'text-green-300',  accent: 'bg-green-50',    cardBg: 'bg-green-50/50',  cardBorder: 'border-green-100',  gradient: 'from-green-400 to-teal-300',      headerGradient: 'from-[#6db388] to-[#a3d9b9]',   progressGradient: 'from-green-300 via-teal-200 to-emerald-200',     iconColor: 'text-green-400',  buttonBg: 'bg-green-50',   buttonText: 'text-[#6db388]',  hasidicDot: 'border-[#80cbc4]', notesDot: 'border-[#26a69a]', hasidicBorder: 'border-[#80c9a0]', notesNumColor: 'text-[#2e9e7a]' },
-  { id: 'sunset', name: 'שקיעה רכה', bg: 'bg-[#fffaf5]', primary: 'text-[#e59a7d]', secondary: 'text-orange-300', accent: 'bg-orange-50',   cardBg: 'bg-orange-50/50', cardBorder: 'border-orange-100', gradient: 'from-orange-300 to-rose-300',     headerGradient: 'from-[#e59a7d] to-[#ffc4ae]',   progressGradient: 'from-orange-200 via-rose-200 to-pink-200',       iconColor: 'text-orange-400', buttonBg: 'bg-orange-50',  buttonText: 'text-[#e59a7d]',  hasidicDot: 'border-[#ffcc80]', notesDot: 'border-[#e57373]', hasidicBorder: 'border-[#f0b89a]', notesNumColor: 'text-[#d4845a]' },
+  { id: 'pink',   name: 'ורוד קלאסי', bg: 'bg-[#fff5f7]', primary: 'text-[#d81b60]', secondary: 'text-pink-400',   accent: 'bg-pink-100',    cardBg: 'bg-pink-50',      cardBorder: 'border-pink-100',   gradient: 'from-pink-500 to-purple-500',     headerGradient: 'from-[#d81b60] to-[#ec407a]',   progressGradient: 'from-pink-400 via-purple-400 to-blue-400',       iconColor: 'text-pink-500',   buttonBg: 'bg-pink-100',   buttonText: 'text-[#d81b60]',  hasidicDot: 'border-[#b39ddb]', notesDot: 'border-[#ba68c8]', hasidicBorder: 'border-[#b8a0e0]', notesNumColor: 'text-[#9c6fc0]' },
+  { id: 'blue',   name: 'כחול שמיים', bg: 'bg-[#f0f7ff]', primary: 'text-[#5c92d1]', secondary: 'text-blue-300',   accent: 'bg-blue-50',     cardBg: 'bg-blue-50/50',   cardBorder: 'border-blue-100',   gradient: 'from-blue-400 to-indigo-300',     headerGradient: 'from-[#5c92d1] to-[#8eb9eb]',   progressGradient: 'from-blue-300 via-indigo-200 to-purple-200',     iconColor: 'text-blue-400',   buttonBg: 'bg-blue-50',    buttonText: 'text-[#5c92d1]',  hasidicDot: 'border-[#90caf9]', notesDot: 'border-[#5c6bc0]', hasidicBorder: 'border-[#80aadf]', notesNumColor: 'text-[#4d7fd4]' },
+  { id: 'green',  name: 'ירוק טבע',   bg: 'bg-[#f2fcf5]', primary: 'text-[#6db388]', secondary: 'text-green-300',  accent: 'bg-green-50',    cardBg: 'bg-green-50/50',  cardBorder: 'border-green-100',  gradient: 'from-green-400 to-teal-300',      headerGradient: 'from-[#6db388] to-[#a3d9b9]',   progressGradient: 'from-green-300 via-teal-200 to-emerald-200',     iconColor: 'text-green-400',  buttonBg: 'bg-green-50',   buttonText: 'text-[#6db388]',  hasidicDot: 'border-[#80cbc4]', notesDot: 'border-[#26a69a]', hasidicBorder: 'border-[#68c095]', notesNumColor: 'text-[#3aaa82]' },
+  { id: 'sunset', name: 'שקיעה רכה', bg: 'bg-[#fffaf5]', primary: 'text-[#e59a7d]', secondary: 'text-orange-300', accent: 'bg-orange-50',   cardBg: 'bg-orange-50/50', cardBorder: 'border-orange-100', gradient: 'from-orange-300 to-rose-300',     headerGradient: 'from-[#e59a7d] to-[#ffc4ae]',   progressGradient: 'from-orange-200 via-rose-200 to-pink-200',       iconColor: 'text-orange-400', buttonBg: 'bg-orange-50',  buttonText: 'text-[#e59a7d]',  hasidicDot: 'border-[#ffcc80]', notesDot: 'border-[#e57373]', hasidicBorder: 'border-[#e8a080]', notesNumColor: 'text-[#d4845a]', hebrewDateColor: 'text-[#fdba74]' },
 ];
 
 async function requestNotificationPermission(): Promise<boolean> {
@@ -586,14 +586,14 @@ export default function App() {
               <motion.div initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 20 }} className="w-full max-w-sm bg-white rounded-[2.5rem] shadow-2xl overflow-hidden" onClick={e => e.stopPropagation()}>
                 <div className={`p-6 border-b ${theme.cardBorder} flex justify-between items-center ${theme.cardBg}`}>
                   <h3 className={`text-xl font-black ${theme.primary} flex items-center gap-2`}><Settings size={20} /> הגדרות</h3>
-                  <button onClick={() => setShowSettings(false)} className="text-gray-400 hover:text-gray-600"><X size={24} /></button>
+                  <button onClick={() => setShowSettings(false)} className="text-[#9ca3af] hover:text-[#111827]"><X size={24} /></button>
                 </div>
                 <div className="p-6 space-y-7 max-h-[75vh] overflow-y-auto" style={{ scrollbarWidth: 'thin' }}>
                   <div className="space-y-3">
-                    <label className="text-sm font-black text-gray-400 uppercase tracking-widest flex items-center gap-2"><Sparkles size={14} className={theme.iconColor} /> פלטת צבעים</label>
+                    <label className="text-sm font-black text-[#9ca3af] uppercase tracking-widest flex items-center gap-2"><Sparkles size={14} className={theme.iconColor} /> פלטת צבעים</label>
                     <div className="grid grid-cols-2 gap-2">
                       {THEMES.map(t => (
-                        <button key={t.id} onClick={() => setTheme(t)} className={`flex items-center gap-2 p-3 rounded-xl border-2 transition-all ${theme.id === t.id ? `${t.cardBorder} ${t.cardBg}` : 'border-gray-50 hover:border-gray-100'}`}>
+                        <button key={t.id} onClick={() => setTheme(t)} className={`flex items-center gap-2 p-3 rounded-xl border-2 transition-all ${theme.id === t.id ? `${t.cardBorder} ${t.cardBg}` : 'border-gray-50 hover:border-[#f3f4f6]'}`}>
                           <div className={`w-4 h-4 rounded-full bg-gradient-to-r ${t.gradient}`} />
                           <span className={`text-xs font-black ${theme.id === t.id ? t.primary : 'text-gray-500'}`}>{t.name}</span>
                         </button>
@@ -601,48 +601,48 @@ export default function App() {
                     </div>
                   </div>
                   <div className="space-y-3">
-                    <label className="text-sm font-black text-gray-400 uppercase tracking-widest flex items-center gap-2"><Calendar size={14} className="text-blue-400" /> תאריכים</label>
+                    <label className="text-sm font-black text-[#9ca3af] uppercase tracking-widest flex items-center gap-2"><Calendar size={14} className="text-blue-400" /> תאריכים</label>
                     <div className="space-y-2">
-                      <p className="text-xs text-gray-400 font-bold">תחילת ספירה</p>
+                      <p className="text-xs text-[#9ca3af] font-bold">תחילת ספירה</p>
                       <input type="date" value={startDate.toISOString().split('T')[0]} onChange={e => setStartDate(new Date(e.target.value))} className="w-full p-3 bg-blue-50 border-2 border-blue-100 rounded-xl font-black text-blue-600 focus:outline-none" />
                     </div>
                     <div className="space-y-2">
-                      <p className="text-xs text-gray-400 font-bold">יציאה לחופשה</p>
+                      <p className="text-xs text-[#9ca3af] font-bold">יציאה לחופשה</p>
                       <input type="date" value={targetDate.toISOString().split('T')[0]} onChange={e => setTargetDate(new Date(e.target.value))} className="w-full p-3 bg-pink-50 border-2 border-pink-100 rounded-xl font-black text-[#d81b60] focus:outline-none" />
                     </div>
                   </div>
                   <div className="space-y-3">
-                    <label className="text-sm font-black text-gray-400 uppercase tracking-widest flex items-center gap-2"><Gift size={14} /> חופשות אישיות</label>
+                    <label className="text-sm font-black text-[#9ca3af] uppercase tracking-widest flex items-center gap-2"><Gift size={14} /> חופשות אישיות</label>
                     <div className="space-y-2 max-h-36 overflow-y-auto">
                       {customVacations.map(vac => (
                         <div key={vac.id} className={`flex items-center justify-between ${theme.cardBg} p-3 rounded-xl border ${theme.cardBorder}`}>
-                          <div><p className={`text-xs font-black ${theme.primary}`}>{vac.name}</p><p className="text-[10px] text-gray-400">{vac.startDate} → {vac.endDate}</p></div>
+                          <div><p className={`text-xs font-black ${theme.primary}`}>{vac.name}</p><p className="text-[10px] text-[#9ca3af]">{vac.startDate} → {vac.endDate}</p></div>
                           <button onClick={() => setCustomVacations(prev => prev.filter(v => v.id !== vac.id))} className="text-red-300 hover:text-red-500"><Trash2 size={15} /></button>
                         </div>
                       ))}
                     </div>
-                    <div className="space-y-2 bg-gray-50 p-3 rounded-xl">
+                    <div className="space-y-2 bg-white p-3 rounded-xl">
                       <input type="text" value={newVacName} onChange={e => setNewVacName(e.target.value)} placeholder="שם החופשה" className={`w-full p-2 bg-white border ${theme.cardBorder} rounded-lg text-xs font-bold focus:outline-none`} />
                       <div className="grid grid-cols-2 gap-2">
-                        <div><p className="text-[10px] text-gray-400 mb-1">מ-</p><input type="date" value={newVacStart} onChange={e => setNewVacStart(e.target.value)} className={`w-full p-2 bg-white border ${theme.cardBorder} rounded-lg text-xs font-bold focus:outline-none`} /></div>
-                        <div><p className="text-[10px] text-gray-400 mb-1">עד</p><input type="date" value={newVacEnd} onChange={e => setNewVacEnd(e.target.value)} className={`w-full p-2 bg-white border ${theme.cardBorder} rounded-lg text-xs font-bold focus:outline-none`} /></div>
+                        <div><p className="text-[10px] text-[#9ca3af] mb-1">מ-</p><input type="date" value={newVacStart} onChange={e => setNewVacStart(e.target.value)} className={`w-full p-2 bg-white border ${theme.cardBorder} rounded-lg text-xs font-bold focus:outline-none`} /></div>
+                        <div><p className="text-[10px] text-[#9ca3af] mb-1">עד</p><input type="date" value={newVacEnd} onChange={e => setNewVacEnd(e.target.value)} className={`w-full p-2 bg-white border ${theme.cardBorder} rounded-lg text-xs font-bold focus:outline-none`} /></div>
                       </div>
                       <button onClick={addVacationRange} className={`w-full py-2 ${theme.buttonBg} ${theme.buttonText} font-black rounded-xl text-xs hover:opacity-80 flex items-center justify-center gap-1`}><Plus size={14} /> הוסף טווח חופשה</button>
                     </div>
                   </div>
                   <div className="space-y-3">
-                    <label className="text-sm font-black text-gray-400 uppercase tracking-widest flex items-center gap-2"><Bell size={14} /> התראות</label>
+                    <label className="text-sm font-black text-[#9ca3af] uppercase tracking-widest flex items-center gap-2"><Bell size={14} /> התראות</label>
                     <div className={`${theme.cardBg} rounded-xl p-4 border ${theme.cardBorder} space-y-3`}>
                       <div className="flex items-center justify-between">
-                        <div><p className="text-xs font-black text-gray-700">התראה שבועית</p><p className="text-[10px] text-gray-400">כל ראשון - כמה ימים נשאר + אחוז התקדמות</p></div>
+                        <div><p className="text-xs font-black text-[#111827]">התראה שבועית</p><p className="text-[10px] text-[#9ca3af]">כל ראשון - כמה ימים נשאר + אחוז התקדמות</p></div>
                         <button onClick={weeklyNotifEnabled ? () => setWeeklyNotifEnabled(false) : enableWeeklyNotif} className={`px-3 py-1.5 rounded-lg text-xs font-black transition-colors ${weeklyNotifEnabled ? 'bg-green-100 text-green-700' : `${theme.buttonBg} ${theme.buttonText}`}`}>{weeklyNotifEnabled ? '✓ פעיל' : 'הפעל'}</button>
                       </div>
-                      <div className="flex items-center justify-between border-t border-gray-100 pt-3">
-                        <div><p className="text-xs font-black text-gray-700">🎉 התראת יום אחרון</p><p className="text-[10px] text-gray-400">קונפטי + הודעה ביום היציאה לחופשה</p></div>
+                      <div className="flex items-center justify-between border-t border-[#f3f4f6] pt-3">
+                        <div><p className="text-xs font-black text-[#111827]">🎉 התראת יום אחרון</p><p className="text-[10px] text-[#9ca3af]">קונפטי + הודעה ביום היציאה לחופשה</p></div>
                         <button onClick={() => { setShowSettings(false); setShowCelebration(true); }} className={`px-3 py-1.5 rounded-lg text-xs font-black ${theme.buttonBg} ${theme.buttonText}`}>תצוגה מקדימה</button>
                       </div>
-                      <div className="flex items-center justify-between border-t border-gray-100 pt-3">
-                        <div><p className="text-xs font-black text-gray-700">🔔 בדיקת התראה</p><p className="text-[10px] text-gray-400">שלח התראה עכשיו לבדיקה</p></div>
+                      <div className="flex items-center justify-between border-t border-[#f3f4f6] pt-3">
+                        <div><p className="text-xs font-black text-[#111827]">🔔 בדיקת התראה</p><p className="text-[10px] text-[#9ca3af]">שלח התראה עכשיו לבדיקה</p></div>
                         <button onClick={async () => {
                           const granted = await requestNotificationPermission();
                           setNotifPermission(Notification.permission);
@@ -658,7 +658,7 @@ export default function App() {
                   </div>
                   {isInstallable && (
                     <div className="space-y-3">
-                      <label className="text-sm font-black text-gray-400 uppercase tracking-widest flex items-center gap-2"><Download size={14} /> אפליקציה</label>
+                      <label className="text-sm font-black text-[#9ca3af] uppercase tracking-widest flex items-center gap-2"><Download size={14} /> אפליקציה</label>
                       <motion.button
                         onClick={handleManualInstall}
                         whileTap={{ scale: 0.97 }}
@@ -674,7 +674,7 @@ export default function App() {
                         <span>התקנת האפליקציה על המכשיר</span>
                         <span className="text-xs opacity-75 font-normal">גישה מהירה ⚡</span>
                       </motion.button>
-                      <p className="text-[10px] text-gray-400 text-center">הכפתור ייעלם אוטומטית לאחר ההתקנה</p>
+                      <p className="text-[10px] text-[#9ca3af] text-center">הכפתור ייעלם אוטומטית לאחר ההתקנה</p>
                     </div>
                   )}
                   <div className="pt-2 text-center"><button onClick={() => setShowSettings(false)} className={`${theme.secondary} font-black text-sm hover:underline`}>סגור וחזור לספירה</button></div>
@@ -740,7 +740,7 @@ export default function App() {
             <span className={`${theme.secondary} text-[10px] font-bold`}>אירוע חסידי</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <div className="w-3.5 h-3.5 bg-white border-2 border-gray-100 rounded-md shadow-sm flex items-center justify-center">
+            <div className="w-3.5 h-3.5 bg-white border-2 border-[#f3f4f6] rounded-md shadow-sm flex items-center justify-center">
               <span className={`text-[8px] font-black ${theme.notesNumColor}`}>7</span>
             </div>
             <span className={`${theme.secondary} text-[10px] font-bold`}>יש הערה</span>
@@ -845,19 +845,19 @@ function DayModal({ day, theme, dayExtras, onClose, onToggleVacation, onAddNote,
     setNoteText(''); setNoteTime(''); setNoteType('note'); setNoteReminder(false);
   };
 
-  const bgColor = isVacation ? 'bg-[#fce4ec]' : day.holidayInfo ? 'bg-[#fce4ec]' : day.hasidicEvent ? 'bg-[#e8f5e9]' : day.isWeekend ? 'bg-[#e3f2fd]' : day.isWorkday ? 'bg-[#fff9c4]' : 'bg-gray-50';
+  const bgColor = isVacation ? 'bg-[#fce4ec]' : day.holidayInfo ? 'bg-[#fce4ec]' : day.hasidicEvent ? 'bg-[#e8f5e9]' : day.isWeekend ? 'bg-[#e3f2fd]' : day.isWorkday ? 'bg-[#fff9c4]' : 'bg-white';
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/30 backdrop-blur-sm" onClick={onClose}>
       <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} transition={{ type: 'spring', damping: 20, stiffness: 300 }} className="w-full max-w-md bg-white rounded-[2.5rem] shadow-2xl overflow-hidden" onClick={e => e.stopPropagation()}>
-        <div className={`p-5 ${bgColor} border-b border-gray-100 flex justify-between items-start`}>
+        <div className={`p-5 ${bgColor} border-b border-[#f3f4f6] flex justify-between items-start`}>
           <div>
             <p className={`text-xl font-black ${theme.primary}`}>{day.date.toLocaleDateString('he-IL', { weekday: 'long', day: 'numeric', month: 'long' })}</p>
-            <p className="text-sm text-gray-400 font-bold mt-0.5">{day.hebrewDate}</p>
+            <p className="text-sm text-[#9ca3af] font-bold mt-0.5">{day.hebrewDate}</p>
             {day.holidayInfo && <span className="inline-block mt-1 px-2 py-0.5 bg-pink-100 text-pink-700 text-xs font-black rounded-full">{day.holidayInfo.name}</span>}
             {isVacation && !day.holidayInfo && <span className="inline-block mt-1 px-2 py-0.5 bg-pink-100 text-pink-700 text-xs font-black rounded-full">יום חופשה אישי</span>}
           </div>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 mt-1"><X size={22} /></button>
+          <button onClick={onClose} className="text-[#9ca3af] hover:text-[#111827] mt-1"><X size={22} /></button>
         </div>
 
         <div className="p-5 max-h-[60vh] overflow-y-auto space-y-4" style={{ scrollbarWidth: 'thin' }}>
@@ -876,9 +876,9 @@ function DayModal({ day, theme, dayExtras, onClose, onToggleVacation, onAddNote,
             </div>
           )}
           {day.calendarEvent && !day.holidayInfo && (
-            <div className="bg-gray-50 border border-gray-200 rounded-2xl p-4">
+            <div className="bg-white border border-[#f3f4f6] rounded-2xl p-4">
               <div className="flex items-center gap-2">
-                <Calendar size={16} className="text-gray-400" /><p className="font-black text-gray-600 text-sm">{day.calendarEvent}</p>
+                <Calendar size={16} className="text-[#9ca3af]" /><p className="font-black text-[#111827] text-sm">{day.calendarEvent}</p>
                 <span className="text-[10px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">מועד</span>
               </div>
             </div>
@@ -890,7 +890,7 @@ function DayModal({ day, theme, dayExtras, onClose, onToggleVacation, onAddNote,
           )}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <p className="font-black text-gray-600 text-sm flex items-center gap-1"><CheckSquare size={15} /> הערות ומשימות</p>
+              <p className="font-black text-[#111827] text-sm flex items-center gap-1"><CheckSquare size={15} /> הערות ומשימות</p>
               <button onClick={() => showAddNote ? handleCloseForm() : setShowAddNote(true)} className={`text-xs font-black px-3 py-1 rounded-full ${theme.buttonBg} ${theme.buttonText} flex items-center gap-1`}>
                 {showAddNote ? <><ChevronUp size={13} /> סגור</> : <><Plus size={13} /> הוסף</>}
               </button>
@@ -900,14 +900,14 @@ function DayModal({ day, theme, dayExtras, onClose, onToggleVacation, onAddNote,
                 <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className={`${theme.cardBg} rounded-2xl p-4 space-y-3 border ${theme.cardBorder} overflow-hidden`}>
                   <p className="text-xs font-black text-gray-500">{editingNoteId ? '✏️ עריכה' : '➕ הוספה חדשה'}</p>
                   <div className="flex gap-2">
-                    <button onClick={() => setNoteType('note')} className={`flex-1 py-2 rounded-xl text-xs font-black flex items-center justify-center gap-1.5 border-2 transition-colors ${noteType === 'note' ? 'bg-blue-100 border-blue-400 text-blue-700' : 'bg-white border-gray-200 text-gray-400'}`}>
+                    <button onClick={() => setNoteType('note')} className={`flex-1 py-2 rounded-xl text-xs font-black flex items-center justify-center gap-1.5 border-2 transition-colors ${noteType === 'note' ? 'bg-blue-100 border-blue-400 text-blue-700' : 'bg-white border-[#f3f4f6] text-[#9ca3af]'}`}>
                       📝 הערה
                     </button>
-                    <button onClick={() => setNoteType('task')} className={`flex-1 py-2 rounded-xl text-xs font-black flex items-center justify-center gap-1.5 border-2 transition-colors ${noteType === 'task' ? 'bg-green-100 border-green-400 text-green-700' : 'bg-white border-gray-200 text-gray-400'}`}>
+                    <button onClick={() => setNoteType('task')} className={`flex-1 py-2 rounded-xl text-xs font-black flex items-center justify-center gap-1.5 border-2 transition-colors ${noteType === 'task' ? 'bg-green-100 border-green-400 text-green-700' : 'bg-white border-[#f3f4f6] text-[#9ca3af]'}`}>
                       ✅ משימה
                     </button>
                   </div>
-                  <textarea value={noteText} onChange={e => setNoteText(e.target.value)} placeholder={noteType === 'task' ? 'כתוב משימה...' : 'כתוב הערה...'} className="w-full p-3 bg-white border border-gray-200 rounded-xl text-sm resize-none focus:outline-none min-h-[70px]" />
+                  <textarea value={noteText} onChange={e => setNoteText(e.target.value)} placeholder={noteType === 'task' ? 'כתוב משימה...' : 'כתוב הערה...'} className="w-full p-3 bg-white border border-[#f3f4f6] rounded-xl text-sm resize-none focus:outline-none min-h-[70px]" />
                   <div className="flex items-center gap-3">
                     <label className="flex items-center gap-2 text-xs font-black text-gray-500 cursor-pointer">
                       <input type="checkbox" checked={noteReminder} onChange={e => setNoteReminder(e.target.checked)} className="rounded" /><Bell size={12} /> תזכורת
@@ -920,7 +920,7 @@ function DayModal({ day, theme, dayExtras, onClose, onToggleVacation, onAddNote,
             </AnimatePresence>
             {(dayExtras.notes || []).length === 0 && !showAddNote && <p className="text-xs text-gray-300 text-center py-2">אין הערות עדיין</p>}
             {(dayExtras.notes || []).map(note => (
-              <div key={note.id} className="bg-gray-50 rounded-xl p-3 flex items-start justify-between gap-2 border border-gray-100">
+              <div key={note.id} className="bg-white rounded-xl p-3 flex items-start justify-between gap-2 border border-[#f3f4f6]">
                 <div className="flex-1">
                   <div className="flex items-center gap-1.5 mb-1">
                     {note.type === 'task'
@@ -928,8 +928,8 @@ function DayModal({ day, theme, dayExtras, onClose, onToggleVacation, onAddNote,
                       : <span className="text-[10px] font-black bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">📝 הערה</span>
                     }
                   </div>
-                  <p className="text-sm text-gray-700 leading-relaxed">{note.text}</p>
-                  {note.reminderEnabled && note.reminderTime && <p className="text-[10px] text-gray-400 mt-1 flex items-center gap-1"><Clock size={10} /> תזכורת: {note.reminderTime}</p>}
+                  <p className="text-sm text-[#111827] leading-relaxed">{note.text}</p>
+                  {note.reminderEnabled && note.reminderTime && <p className="text-[10px] text-[#9ca3af] mt-1 flex items-center gap-1"><Clock size={10} /> תזכורת: {note.reminderTime}</p>}
                 </div>
                 <div className="flex flex-col gap-1">
                   <button onClick={() => openEdit(note)} className="text-blue-300 hover:text-blue-500"><Pencil size={14} /></button>
@@ -947,9 +947,9 @@ function DayModal({ day, theme, dayExtras, onClose, onToggleVacation, onAddNote,
 function StatBox({ label, value, color, textColor, icon, theme }: { label: string; value: number; color: string; textColor: string; icon: React.ReactNode; theme: Theme }) {
   return (
     <motion.div whileHover={{ y: -5, scale: 1.02 }} className={`bg-white border-2 ${color} rounded-[2rem] p-4 text-center shadow-[0_8px_20px_rgba(0,0,0,0.04)] relative overflow-hidden`}>
-      <div className="absolute -top-1 -right-1 opacity-10 text-gray-400">{icon}</div>
+      <div className="absolute -top-1 -right-1 opacity-10 text-[#9ca3af]">{icon}</div>
       <div className={`text-3xl font-black ${textColor} leading-none mb-1.5`}>{value}</div>
-      <div className="text-[10px] font-black text-gray-400 leading-tight uppercase tracking-tighter">{label}</div>
+      <div className="text-[10px] font-black text-[#9ca3af] leading-tight uppercase tracking-tighter">{label}</div>
     </motion.div>
   );
 }
@@ -965,21 +965,21 @@ function LegendItem({ color, borderColor, label, theme }: { color: string; borde
 
 const DaySquare: React.FC<{ day: DayData; targetDate: Date; theme: Theme; hasNotes: boolean; onClick: () => void }> =
   ({ day, targetDate, theme, hasNotes, onClick }) => {
-    let bgColor = "bg-white", borderColor = "border-gray-100";
-    if (day.isVacation || day.holidayInfo) { bgColor = "bg-[#fce4ec]"; borderColor = "border-[#f06292]"; }
+    let bgColor = "bg-white", borderColor = "border-[#f3f4f6]";
+    if (day.isVacation || day.holidayInfo) { bgColor = "bg-[#fce8f0]"; borderColor = "border-[#f5b8d0]"; }
     else if (day.isWorkday) { bgColor = "bg-[#fff9c4]"; borderColor = "border-[#ffd54f]"; }
     else if (day.isWeekend) { bgColor = "bg-[#e3f2fd]"; borderColor = "border-[#64b5f6]"; }
     // תאריך חסידי — גבול מיוחד תמיד, גם על חופשה/סופ"ש (רקע נשאר כמו שהוא)
     if (day.hasidicEvent) { borderColor = theme.hasidicBorder; }
     if (day.isToday) borderColor = "border-[#4caf50] border-[2px]";
 
-    const dayNumColor = hasNotes ? theme.notesNumColor : "text-gray-400";
+    const dayNumColor = hasNotes ? theme.notesNumColor : "text-[#9ca3af]";
 
     return (
       <button onClick={onClick} className={`aspect-square rounded-xl border-2 ${borderColor} ${bgColor} flex flex-col items-center justify-center p-0.5 relative overflow-hidden shadow-sm active:scale-95 transition-transform cursor-pointer ${day.date > targetDate ? 'opacity-10 grayscale' : ''}`}>
         <div className={`flex flex-col items-center justify-center -space-y-0.5 w-full ${(day.holidayInfo || day.isVacation) ? 'mb-2' : ''}`}>
           <span className={`text-[10px] font-bold leading-tight ${dayNumColor}`}>{day.dayOfMonth}</span>
-          <span className={`text-[8px] font-medium ${theme.secondary} leading-tight truncate max-w-full px-0.5`}>{day.hebrewDate}</span>
+          <span className={`text-[8px] font-medium ${theme.hebrewDateColor} leading-tight truncate max-w-full px-0.5`}>{day.hebrewDate}</span>
           {day.countdown != null && (
             <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }} className="text-[12px] font-black text-[#fbc02d] leading-none mt-0.5">{day.countdown}</motion.span>
           )}
@@ -987,10 +987,6 @@ const DaySquare: React.FC<{ day: DayData; targetDate: Date; theme: Theme; hasNot
         {/* Holiday / vacation banner at bottom */}
         {(day.holidayInfo || day.isVacation) && (
           <div className="absolute bottom-0 left-0 right-0 bg-[#f06292] text-white text-[5px] text-center py-0.5 font-black truncate px-0.5 leading-none">{day.holidayInfo?.name ?? 'חופשה'}</div>
-        )}
-        {/* Calendar event banner — gray, not a holiday */}
-        {day.calendarEvent && !day.holidayInfo && !day.isVacation && (
-          <div className="absolute bottom-0 left-0 right-0 bg-gray-300 text-gray-600 text-[5px] text-center py-0.5 font-black truncate px-0.5 leading-none">{day.calendarEvent}</div>
         )}
         {day.isToday && <div className="absolute top-0.5 right-0.5"><Sparkles size={6} className="text-[#4caf50]" /></div>}
       </button>
