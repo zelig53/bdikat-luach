@@ -21,10 +21,10 @@ const DEFAULT_TARGET_DATE = new Date(2026, 5, 11);
 
 // All dates verified against the Hebrew calendar for year 5786 (2025–2026)
 const HOLIDAYS: { name: string; start: Date; end: Date; type: 'holiday' | 'fast' | 'other' }[] = [
-  { name: "חופשת פסח",           start: new Date(2026,  2, 31), end: new Date(2026,  3,  9), type: 'holiday' },  // 14–22 Nisan
+  { name: "חופשת פסח",           start: new Date(2026,  2, 31), end: new Date(2026,  3,  8), type: 'holiday' },  // 14–21 Nisan
   { name: "יום העצמאות",         start: new Date(2026,  3, 22), end: new Date(2026,  3, 22), type: 'holiday' },  // 5 Iyar
   { name: 'ל"ג בעומר',           start: new Date(2026,  4,  5), end: new Date(2026,  4,  5), type: 'holiday' },  // 18 Iyar
-  { name: "שבועות",              start: new Date(2026,  4, 22), end: new Date(2026,  4, 23), type: 'holiday' },  // 6–7 Sivan
+  { name: "שבועות",              start: new Date(2026,  4, 21), end: new Date(2026,  4, 21), type: 'holiday' },  // 6 Sivan
 ];
 
 // תאריכים שמוצגים בלוח אבל לא משפיעים על חישוב ימי עבודה/חופשה
@@ -966,9 +966,9 @@ function LegendItem({ color, borderColor, label, theme }: { color: string; borde
 const DaySquare: React.FC<{ day: DayData; targetDate: Date; theme: Theme; hasNotes: boolean; onClick: () => void }> =
   ({ day, targetDate, theme, hasNotes, onClick }) => {
     let bgColor = "bg-white", borderColor = "border-gray-100";
-    if (day.isVacation || day.holidayInfo) { bgColor = "bg-[#fce4ec]"; borderColor = "border-[#f06292]"; }
-    else if (day.isWorkday) { bgColor = "bg-[#fff9c4]"; borderColor = "border-[#ffd54f]"; }
-    else if (day.isWeekend) { bgColor = "bg-[#e3f2fd]"; borderColor = "border-[#64b5f6]"; }
+    if (day.isVacation || day.holidayInfo) { bgColor = "bg-[#fdf0f4]"; borderColor = "border-[#f9b8cc]"; }
+    else if (day.isWorkday) { bgColor = "bg-[#fffef0]"; borderColor = "border-[#f0e080]"; }
+    else if (day.isWeekend) { bgColor = "bg-[#f0f6ff]"; borderColor = "border-[#bcd4f5]"; }
     // תאריך חסידי — גבול מיוחד תמיד, גם על חופשה/סופ"ש (רקע נשאר כמו שהוא)
     if (day.hasidicEvent) { borderColor = theme.hasidicBorder; }
     if (day.isToday) borderColor = "border-[#4caf50] border-[2px]";
@@ -978,19 +978,19 @@ const DaySquare: React.FC<{ day: DayData; targetDate: Date; theme: Theme; hasNot
     return (
       <button onClick={onClick} className={`aspect-square rounded-xl border-2 ${borderColor} ${bgColor} flex flex-col items-center justify-center p-0.5 relative overflow-hidden shadow-sm active:scale-95 transition-transform cursor-pointer ${day.date > targetDate ? 'opacity-10 grayscale' : ''}`}>
         <div className={`flex flex-col items-center justify-center -space-y-0.5 w-full ${(day.holidayInfo || day.isVacation) ? 'mb-2' : ''}`}>
-          <span className={`text-[10px] font-bold leading-tight ${dayNumColor}`}>{day.dayOfMonth}</span>
-          <span className={`text-[8px] font-medium ${theme.secondary} leading-tight truncate max-w-full px-0.5`}>{day.hebrewDate}</span>
+          <span className={`text-[9px] font-semibold leading-tight ${dayNumColor}`}>{day.dayOfMonth}</span>
+          <span className="text-[7px] font-medium text-gray-300 leading-tight truncate max-w-full px-0.5">{day.hebrewDate}</span>
           {day.countdown != null && (
-            <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }} className="text-[12px] font-black text-[#fbc02d] leading-none mt-0.5">{day.countdown}</motion.span>
+            <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }} className="text-[11px] font-bold text-[#e8b84b] leading-none mt-0.5">{day.countdown}</motion.span>
           )}
         </div>
         {/* Holiday / vacation banner at bottom */}
         {(day.holidayInfo || day.isVacation) && (
-          <div className="absolute bottom-0 left-0 right-0 bg-[#f06292] text-white text-[5px] text-center py-0.5 font-black truncate px-0.5 leading-none">{day.holidayInfo?.name ?? 'חופשה'}</div>
+          <div className="absolute bottom-0 left-0 right-0 bg-[#f5a0bc] text-white text-[5px] text-center py-0.5 font-bold truncate px-0.5 leading-none">{day.holidayInfo?.name ?? 'חופשה'}</div>
         )}
         {/* Calendar event banner — gray, not a holiday */}
         {day.calendarEvent && !day.holidayInfo && !day.isVacation && (
-          <div className="absolute bottom-0 left-0 right-0 bg-gray-300 text-gray-600 text-[5px] text-center py-0.5 font-black truncate px-0.5 leading-none">{day.calendarEvent}</div>
+          <div className="absolute bottom-0 left-0 right-0 bg-gray-200 text-gray-400 text-[5px] text-center py-0.5 font-bold truncate px-0.5 leading-none">{day.calendarEvent}</div>
         )}
         {day.isToday && <div className="absolute top-0.5 right-0.5"><Sparkles size={6} className="text-[#4caf50]" /></div>}
       </button>
