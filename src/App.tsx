@@ -26,7 +26,7 @@ const HOLIDAYS: { name: string; start: Date; end: Date; type: 'holiday' | 'fast'
   { name: 'ט"ו בשבט',           start: new Date(2026,  1,  2), end: new Date(2026,  1,  2), type: 'other'   },  // 15 Shevat
   { name: "תענית אסתר",          start: new Date(2026,  2,  2), end: new Date(2026,  2,  2), type: 'fast'    },  // 13 Adar
   { name: "פורים",               start: new Date(2026,  2,  3), end: new Date(2026,  2,  4), type: 'holiday' },  // 14–15 Adar
-  { name: "חופשת פסח",           start: new Date(2026,  3,  2), end: new Date(2026,  3,  9), type: 'holiday' },  // 15–22 Nisan
+  { name: "חופשת פסח",           start: new Date(2026,  2, 31), end: new Date(2026,  3,  9), type: 'holiday' },  // 14–22 Nisan
   { name: "יום השואה",           start: new Date(2026,  3, 20), end: new Date(2026,  3, 20), type: 'other'   },  // 27 Nisan
   { name: "יום הזיכרון",         start: new Date(2026,  3, 21), end: new Date(2026,  3, 21), type: 'other'   },  // 4 Iyar
   { name: "יום העצמאות",         start: new Date(2026,  3, 22), end: new Date(2026,  3, 22), type: 'holiday' },  // 5 Iyar
@@ -703,7 +703,10 @@ export default function App() {
           <LegendItem color="bg-[#fff9c4]" borderColor="border-[#ffd54f]" label="יום עבודה" theme={theme} />
           <LegendItem color="bg-[#fce4ec]" borderColor="border-[#f06292]" label="חופשה/חג" theme={theme} />
           <LegendItem color="bg-[#e3f2fd]" borderColor="border-[#64b5f6]" label="סופ״ש" theme={theme} />
-          <LegendItem color="bg-[#e8f5e9]" borderColor="border-[#66bb6a]" label="אירוע חסידי" theme={theme} />
+          <div className="flex items-center gap-1.5">
+            <div className="w-3.5 h-3.5 flex items-center justify-center"><div className="w-2.5 h-2.5 bg-[#43a047] rounded-full shadow-sm" /></div>
+            <span className={`${theme.secondary} text-[10px] font-bold`}>אירוע חסידי</span>
+          </div>
           <LegendItem color="bg-white" borderColor="border-[#4caf50]" label="היום" theme={theme} />
         </div>
 
@@ -925,18 +928,20 @@ const DaySquare: React.FC<{ day: DayData; targetDate: Date; theme: Theme; hasNot
 
     return (
       <button onClick={onClick} className={`aspect-square rounded-xl border ${borderColor} ${bgColor} flex flex-col items-center justify-center p-0.5 relative overflow-hidden shadow-sm active:scale-95 transition-transform cursor-pointer ${day.date > targetDate ? 'opacity-10 grayscale' : ''}`}>
-        <div className={`flex flex-col items-center justify-center -space-y-0.5 ${(day.holidayInfo || day.isVacation || day.hasidicEvent) ? 'mb-2' : ''}`}>
+        <div className={`flex flex-col items-center justify-center -space-y-0.5 ${(day.holidayInfo || day.isVacation) ? 'mb-2' : ''}`}>
           <span className="text-[10px] font-bold text-gray-400 leading-tight">{day.dayOfMonth}</span>
           <span className={`text-[8px] font-medium ${theme.secondary} leading-tight truncate max-w-full px-0.5`}>{day.hebrewDate}</span>
           {day.countdown != null && (
             <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }} className="text-[12px] font-black text-[#fbc02d] leading-none mt-0.5">{day.countdown}</motion.span>
           )}
         </div>
+        {/* Holiday / vacation banner at bottom */}
         {(day.holidayInfo || day.isVacation) && (
           <div className="absolute bottom-0 left-0 right-0 bg-[#f06292] text-white text-[5px] text-center py-0.5 font-black truncate px-0.5 leading-none">{day.holidayInfo?.name ?? 'חופשה'}</div>
         )}
-        {day.hasidicEvent && !day.holidayInfo && !day.isVacation && (
-          <div className="absolute bottom-0 left-0 right-0 bg-[#66bb6a] text-white text-[5px] text-center py-0.5 font-black truncate px-0.5 leading-none">{day.hasidicEvent.name}</div>
+        {/* Hasidic event dot — only shown as dot, full text shown on click in modal */}
+        {day.hasidicEvent && (
+          <div className={`absolute left-1 w-2 h-2 bg-[#43a047] rounded-full shadow-sm border border-white ${(day.holidayInfo || day.isVacation) ? 'bottom-4' : 'bottom-1'}`} />
         )}
         {day.isToday && <div className="absolute top-0.5 right-0.5"><Sparkles size={6} className="text-[#4caf50]" /></div>}
         {hasNotes && <div className="absolute top-0.5 left-0.5 w-2 h-2 bg-blue-400 rounded-full" />}
