@@ -1,54 +1,20 @@
-import tailwindcss from '@tailwindcss/vite';
-import react from '@vitejs/plugin-react';
-import path from 'path';
-import { defineConfig } from 'vite';
-import { VitePWA } from 'vite-plugin-pwa';
+<div align="center">
+<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
+</div>
 
-export default defineConfig({
-  plugins: [
-    react(),
-    tailwindcss(),
-    VitePWA({
-      registerType: 'autoUpdate',
-      manifestFilename: 'manifest.json',
-      manifest: {
-        name: 'ספירה לאחור לחופשת לידה',
-        short_name: 'חופשת לידה',
-        description: 'אפליקציית ספירה לאחור מרגשת לחופשת לידה',
-        theme_color: '#fff5f7',
-        background_color: '#fff5f7',
-        display: 'standalone',
-        orientation: 'portrait',
-        dir: 'rtl',
-        lang: 'he',
-        start_url: '/',
-        scope: '/',
-        icons: [
-          {
-            src: 'https://picsum.photos/seed/baby/192/192',
-            sizes: '192x192',
-            type: 'image/png',
-            purpose: 'any'
-          },
-          {
-            src: 'https://picsum.photos/seed/baby/512/512',
-            sizes: '512x512',
-            type: 'image/png',
-            purpose: 'any'
-          },
-          {
-            src: 'https://picsum.photos/seed/baby/512/512',
-            sizes: '512x512',
-            type: 'image/png',
-            purpose: 'maskable'
-          }
-        ]
-      }
-    })
-  ],
-  resolve: {
-    alias: {
-      '@': path.resolve(__dirname, '.'),
-    },
-  },
-});
+# Run and deploy your AI Studio app
+
+This contains everything you need to run your app locally.
+
+View your app in AI Studio: https://ai.studio/apps/ee325e48-c31b-444c-81ae-5ae6e0be2307
+
+## Run Locally
+
+**Prerequisites:**  Node.js
+
+
+1. Install dependencies:
+   `npm install`
+2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
+3. Run the app:
+   `npm run dev`
