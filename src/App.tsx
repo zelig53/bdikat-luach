@@ -91,7 +91,7 @@ function getHashidicEventForDate(date: Date): HasidicEvent | null {
 const isWeekend = (date: Date) => { const d = date.getDay(); return d === 5 || d === 6; };
 
 interface CustomVacation { id: string; startDate: string; endDate: string; name: string; }
-interface Note { id: string; text: string; type: 'note' | 'task'; reminderTime?: string; reminderEnabled: boolean; }
+interface Note { id: string; text: string; type: 'note' | 'task'; reminderTime?: string; reminderEnabled: boolean; completed?: boolean; }
 interface DayExtras { vacation?: boolean; notes: Note[]; }
 
 function dateKey(date: Date): string {
@@ -272,6 +272,7 @@ interface DayData {
   calendarEvent: string | null;
   isToday: boolean; hebrewDate: string; dayOfMonth: number;
   countdown: number | null; isVacation: boolean;
+  hasNotes: boolean; allNotesCompleted: boolean;
 }
 
 interface Theme {
@@ -280,13 +281,16 @@ interface Theme {
   headerGradient: string; progressGradient: string; iconColor: string;
   buttonBg: string; buttonText: string; hasidicDot: string; notesDot: string;
   hasidicBorder: string; notesNumColor: string; hebrewDateColor: string;
+  themeColor: string;
 }
 
 const THEMES: Theme[] = [
-  { id: 'pink',   name: 'ורוד קלאסי', bg: 'bg-[#fff5f7]', primary: 'text-[#d81b60]', secondary: 'text-pink-400',   accent: 'bg-pink-100',    cardBg: 'bg-pink-50',      cardBorder: 'border-pink-100',   gradient: 'from-pink-500 to-purple-500',     headerGradient: 'from-[#d81b60] to-[#ec407a]',   progressGradient: 'from-pink-400 via-purple-400 to-blue-400',       iconColor: 'text-pink-500',   buttonBg: 'bg-pink-100',   buttonText: 'text-[#d81b60]',  hasidicDot: 'border-[#b39ddb]', notesDot: 'border-[#ba68c8]', hasidicBorder: 'border-[#b8a0e0]', notesNumColor: 'text-[#9c6fc0]' },
-  { id: 'blue',   name: 'כחול שמיים', bg: 'bg-[#f0f7ff]', primary: 'text-[#5c92d1]', secondary: 'text-blue-300',   accent: 'bg-blue-50',     cardBg: 'bg-blue-50/50',   cardBorder: 'border-blue-100',   gradient: 'from-blue-400 to-indigo-300',     headerGradient: 'from-[#5c92d1] to-[#8eb9eb]',   progressGradient: 'from-blue-300 via-indigo-200 to-purple-200',     iconColor: 'text-blue-400',   buttonBg: 'bg-blue-50',    buttonText: 'text-[#5c92d1]',  hasidicDot: 'border-[#90caf9]', notesDot: 'border-[#5c6bc0]', hasidicBorder: 'border-[#80aadf]', notesNumColor: 'text-[#4d7fd4]' },
-  { id: 'green',  name: 'ירוק טבע',   bg: 'bg-[#f2fcf5]', primary: 'text-[#6db388]', secondary: 'text-green-300',  accent: 'bg-green-50',    cardBg: 'bg-green-50/50',  cardBorder: 'border-green-100',  gradient: 'from-green-400 to-teal-300',      headerGradient: 'from-[#6db388] to-[#a3d9b9]',   progressGradient: 'from-green-300 via-teal-200 to-emerald-200',     iconColor: 'text-green-400',  buttonBg: 'bg-green-50',   buttonText: 'text-[#6db388]',  hasidicDot: 'border-[#80cbc4]', notesDot: 'border-[#26a69a]', hasidicBorder: 'border-[#68c095]', notesNumColor: 'text-[#3aaa82]' },
-  { id: 'sunset', name: 'שקיעה רכה', bg: 'bg-[#fffaf5]', primary: 'text-[#e59a7d]', secondary: 'text-orange-300', accent: 'bg-orange-50',   cardBg: 'bg-orange-50/50', cardBorder: 'border-orange-100', gradient: 'from-orange-300 to-rose-300',     headerGradient: 'from-[#e59a7d] to-[#ffc4ae]',   progressGradient: 'from-orange-200 via-rose-200 to-pink-200',       iconColor: 'text-orange-400', buttonBg: 'bg-orange-50',  buttonText: 'text-[#e59a7d]',  hasidicDot: 'border-[#ffcc80]', notesDot: 'border-[#e57373]', hasidicBorder: 'border-[#e8a080]', notesNumColor: 'text-[#d4845a]', hebrewDateColor: 'text-[#fdba74]' },
+  { id: 'pink',   name: 'ורוד קלאסי', bg: 'bg-[#fff5f7]', primary: 'text-[#d81b60]', secondary: 'text-pink-400',   accent: 'bg-pink-100',    cardBg: 'bg-pink-50',      cardBorder: 'border-pink-100',   gradient: 'from-pink-500 to-purple-500',     headerGradient: 'from-[#d81b60] to-[#ec407a]',   progressGradient: 'from-pink-400 via-purple-400 to-blue-400',       iconColor: 'text-pink-500',   buttonBg: 'bg-pink-100',   buttonText: 'text-[#d81b60]',  hasidicDot: 'border-[#b39ddb]', notesDot: 'border-[#ba68c8]', hasidicBorder: 'border-[#b8a0e0]', notesNumColor: 'text-[#9c6fc0]', hebrewDateColor:  'text-[#d81b60]', themeColor: '#d81b60' },
+  { id: 'blue',   name: 'כחול שמיים', bg: 'bg-[#f0f7ff]', primary: 'text-[#5c92d1]', secondary: 'text-blue-300',   accent: 'bg-blue-50',     cardBg: 'bg-blue-50/50',   cardBorder: 'border-blue-100',   gradient: 'from-blue-400 to-indigo-300',     headerGradient: 'from-[#5c92d1] to-[#8eb9eb]',   progressGradient: 'from-blue-300 via-indigo-200 to-purple-200',     iconColor: 'text-blue-400',   buttonBg: 'bg-blue-50',    buttonText: 'text-[#5c92d1]',  hasidicDot: 'border-[#90caf9]', notesDot: 'border-[#5c6bc0]', hasidicBorder: 'border-[#80aadf]', notesNumColor: 'text-[#4d7fd4]', hebrewDateColor:  'text-[#5c92d1]', themeColor: '#5c92d1' },
+  { id: 'green',  name: 'ירוק טבע',   bg: 'bg-[#f2fcf5]', primary: 'text-[#6db388]', secondary: 'text-green-300',  accent: 'bg-green-50',    cardBg: 'bg-green-50/50',  cardBorder: 'border-green-100',  gradient: 'from-green-400 to-teal-300',      headerGradient: 'from-[#6db388] to-[#a3d9b9]',   progressGradient: 'from-green-300 via-teal-200 to-emerald-200',     iconColor: 'text-green-400',  buttonBg: 'bg-green-50',   buttonText: 'text-[#6db388]',  hasidicDot: 'border-[#80cbc4]', notesDot: 'border-[#26a69a]', hasidicBorder: 'border-[#68c095]', notesNumColor: 'text-[#3aaa82]', hebrewDateColor:  'text-[#6db388]', themeColor: '#6db388' },
+  { id: 'sunset', name: 'שקיעה רכה', bg: 'bg-[#fffaf5]', primary: 'text-[#e59a7d]', secondary: 'text-orange-300', accent: 'bg-orange-50',   cardBg: 'bg-orange-50/50', cardBorder: 'border-orange-100', gradient: 'from-orange-300 to-rose-300',     headerGradient: 'from-[#e59a7d] to-[#ffc4ae]',   progressGradient: 'from-orange-200 via-rose-200 to-pink-200',       iconColor: 'text-orange-400', buttonBg: 'bg-orange-50',  buttonText: 'text-[#e59a7d]',  hasidicDot: 'border-[#ffcc80]', notesDot: 'border-[#e57373]', hasidicBorder: 'border-[#e8a080]', notesNumColor: 'text-[#d4845a]', hebrewDateColor: 'text-[#fdba74]', themeColor: '#e59a7d' },
+  { id: 'lavender', name: 'סגל לבנדר', bg: 'bg-[#f8f7ff]', primary: 'text-[#9d8df1]', secondary: 'text-purple-300', accent: 'bg-purple-50', cardBg: 'bg-purple-50/50', cardBorder: 'border-purple-100', gradient: 'from-[#b19cd9] to-[#9d8df1]', headerGradient: 'from-[#9d8df1] to-[#b19cd9]', progressGradient: 'from-purple-300 via-indigo-200 to-blue-200', iconColor: 'text-purple-400', buttonBg: 'bg-purple-50', buttonText: 'text-[#9d8df1]', hasidicDot: 'border-[#d1c4e9]', notesDot: 'border-[#9575cd]', hasidicBorder: 'border-[#b39ddb]', notesNumColor: 'text-[#7e57c2]', hebrewDateColor: 'text-[#9d8df1]', themeColor: '#9d8df1' },
+  { id: 'gold', name: 'זהב יוקרתי', bg: 'bg-[#fffdf5]', primary: 'text-[#c5a059]', secondary: 'text-yellow-400', accent: 'bg-yellow-50', cardBg: 'bg-yellow-50/50', cardBorder: 'border-yellow-100', gradient: 'from-[#d4af37] to-[#c5a059]', headerGradient: 'from-[#c5a059] to-[#e6c27a]', progressGradient: 'from-yellow-400 via-orange-200 to-yellow-200', iconColor: 'text-yellow-600', buttonBg: 'bg-yellow-50', buttonText: 'text-[#c5a059]', hasidicDot: 'border-[#ffe082]', notesDot: 'border-[#fbc02d]', hasidicBorder: 'border-[#ffd54f]', notesNumColor: 'text-[#b8860b]', hebrewDateColor: 'text-[#c5a059]', themeColor: '#c5a059' },
 ];
 
 async function requestNotificationPermission(): Promise<boolean> {
@@ -392,6 +396,18 @@ export default function App() {
   useEffect(() => { localStorage.setItem('mat_target', targetDate.toISOString()); }, [targetDate]);
   useEffect(() => { localStorage.setItem('mat_start', startDate.toISOString()); }, [startDate]);
   useEffect(() => { localStorage.setItem('mat_theme', theme.id); }, [theme]);
+
+  // Update theme-color meta tag for PWA status bar
+  useEffect(() => {
+    let meta = document.querySelector('meta[name="theme-color"]');
+    if (!meta) {
+      meta = document.createElement('meta');
+      (meta as any).name = 'theme-color';
+      document.head.appendChild(meta);
+    }
+    meta.setAttribute('content', theme.themeColor);
+  }, [theme]);
+
   useEffect(() => { localStorage.setItem('mat_vacations', JSON.stringify(customVacations)); }, [customVacations]);
   useEffect(() => { localStorage.setItem('mat_day_extras', JSON.stringify(dayExtras)); }, [dayExtras]);
   useEffect(() => { localStorage.setItem('mat_weekly_notif', String(weeklyNotifEnabled)); }, [weeklyNotifEnabled]);
@@ -399,7 +415,7 @@ export default function App() {
   // שחזור תזכורות שמורות בכל טעינה של האפליקציה
   useEffect(() => {
     if (Notification.permission !== 'granted') return;
-    Object.entries(dayExtras).forEach(([key, extras]) => {
+    (Object.entries(dayExtras) as [string, DayExtras][]).forEach(([key, extras]) => {
       (extras.notes || []).forEach(note => {
         if (note.reminderEnabled && note.reminderTime) {
           scheduleReminder(note, key);
@@ -479,11 +495,14 @@ export default function App() {
       const hasidicEvent = getHashidicEventForDate(cur);
       const isVacation = !!extras.vacation;
       const workday = checkIsWorkday(cur, customVacations, dayExtras) && cur >= startDate;
+      const hasNotes = (extras.notes || []).length > 0;
+      const allNotesCompleted = hasNotes && (extras.notes || []).every(n => n.completed);
       allDays.push({
         date: new Date(cur), isWorkday: workday, isWeekend: isWeekend(cur),
-        holidayInfo, hasidicEvent,
+        holidayInfo, hasidicEvent, calendarEvent: getCalendarEventForDate(cur),
         isToday: cur.toDateString() === today.toDateString(),
         hebrewDate: getHebrewDate(cur), dayOfMonth: cur.getDate(), countdown: null, isVacation,
+        hasNotes, allNotesCompleted
       });
       cur.setDate(cur.getDate() + 1);
     }
@@ -507,7 +526,13 @@ export default function App() {
     setSelectedDay(prev => prev ? { ...prev, isVacation: !prev.isVacation } : prev);
   }, []);
 
-  const addNote = useCallback((key: string, text: string, type: 'note' | 'task', reminderTime: string, reminderEnabled: boolean) => {
+  const addNote = useCallback(async (key: string, text: string, type: 'note' | 'task', reminderTime: string, reminderEnabled: boolean) => {
+    if (reminderEnabled) {
+      const granted = await requestNotificationPermission();
+      if (!granted) {
+        alert('יש לאשר התראות בדפדפן כדי לקבל תזכורות');
+      }
+    }
     const note: Note = { id: Date.now().toString(), text, type, reminderTime, reminderEnabled };
     setDayExtras(prev => { const cur = prev[key] || { notes: [] }; return { ...prev, [key]: { ...cur, notes: [...cur.notes, note] } }; });
     if (reminderEnabled) scheduleReminder(note, key);
@@ -521,6 +546,9 @@ export default function App() {
   }, []);
 
   const editNote = useCallback(async (key: string, noteId: string, text: string, type: 'note' | 'task', reminderTime: string, reminderEnabled: boolean) => {
+    if (reminderEnabled) {
+      await requestNotificationPermission();
+    }
     setDayExtras(prev => {
       const cur = prev[key] || { notes: [] };
       const updated = cur.notes.map(n => n.id === noteId ? { ...n, text, type, reminderTime, reminderEnabled } : n);
@@ -535,6 +563,14 @@ export default function App() {
     }
   }, []);
 
+  const toggleNoteCompletion = useCallback((key: string, noteId: string) => {
+    setDayExtras(prev => {
+      const cur = prev[key] || { notes: [] };
+      const updated = cur.notes.map(n => n.id === noteId ? { ...n, completed: !n.completed } : n);
+      return { ...prev, [key]: { ...cur, notes: updated } };
+    });
+  }, []);
+
   const addVacationRange = () => {
     if (!newVacStart || !newVacEnd) return;
     setCustomVacations(prev => [...prev, { id: Date.now().toString(), startDate: newVacStart, endDate: newVacEnd, name: newVacName || 'חופשה אישית' }]);
@@ -545,6 +581,28 @@ export default function App() {
     const granted = await requestNotificationPermission();
     setNotifPermission(Notification.permission);
     if (granted) setWeeklyNotifEnabled(true);
+  };
+
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
+
+  const scrollToToday = () => {
+    const currentMonthName = getMonthName(today);
+    const element = document.getElementById(`month-${currentMonthName}`);
+    if (element) {
+      const offset = 80; // Offset for header or spacing
+      const bodyRect = document.body.getBoundingClientRect().top;
+      const elementRect = element.getBoundingClientRect().top;
+      const elementPosition = elementRect - bodyRect;
+      const offsetPosition = elementPosition - offset;
+
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth'
+      });
+    } else {
+      // If not found (e.g. current month is before start date), scroll to top
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   };
 
   return (
@@ -646,10 +704,13 @@ export default function App() {
                         <button onClick={async () => {
                           const granted = await requestNotificationPermission();
                           setNotifPermission(Notification.permission);
-                          if (!granted) { alert('❌ הרשאה לא ניתנה'); return; }
+                          if (!granted) { 
+                            alert('❌ הרשאת התראות חסומה בדפדפן. יש לאשר אותה בהגדרות האתר (לחיצה על המנעול ליד כתובת האתר).'); 
+                            return; 
+                          }
                           try {
                             await showNotification('🔔 בדיקה', 'התראות עובדות! ✅', 'test');
-                            alert('✅ התראה נשלחה! בדוק אם הופיעה');
+                            alert('✅ התראה נשלחה! אם לא ראית אותה, בדקי שהמכשיר לא במצב "נא לא להפריע" או "ריכוז".');
                           } catch(e) { alert('❌ שגיאה: ' + String(e)); }
                         }} className={`px-3 py-1.5 rounded-lg text-xs font-black ${theme.buttonBg} ${theme.buttonText}`}>שלח עכשיו</button>
                       </div>
@@ -665,16 +726,23 @@ export default function App() {
                         whileHover={{ scale: 1.02 }}
                         className={`w-full p-4 bg-gradient-to-r ${theme.gradient} text-white font-black rounded-2xl shadow-lg flex items-center justify-center gap-3 relative overflow-hidden`}
                       >
-                        <motion.div
-                          animate={{ x: [0, 4, 0] }}
-                          transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
-                        >
-                          <Download size={20} />
-                        </motion.div>
-                        <span>התקנת האפליקציה על המכשיר</span>
-                        <span className="text-xs opacity-75 font-normal">גישה מהירה ⚡</span>
+                        <Download size={20} />
+                        <span>התקן כאפליקציה</span>
                       </motion.button>
-                      <p className="text-[10px] text-[#9ca3af] text-center">הכפתור ייעלם אוטומטית לאחר ההתקנה</p>
+                    </div>
+                  )}
+
+                  {isIOS && !window.matchMedia('(display-mode: standalone)').matches && (
+                    <div className="space-y-3">
+                      <label className="text-sm font-black text-[#9ca3af] uppercase tracking-widest flex items-center gap-2"><Download size={14} /> התקנה ב-iPhone</label>
+                      <div className="p-4 bg-blue-50 rounded-2xl border border-blue-100 space-y-2">
+                        <p className="text-xs font-bold text-blue-800">כדי להתקין את האפליקציה ב-iPhone:</p>
+                        <ol className="text-[10px] text-blue-600 list-decimal list-inside space-y-1">
+                          <li>לחצי על כפתור ה-<strong>Share</strong> (ריבוע עם חץ למעלה)</li>
+                          <li>גללי למטה ובחרי ב-<strong>Add to Home Screen</strong></li>
+                          <li>לחצי על <strong>Add</strong> בפינה העליונה</li>
+                        </ol>
+                      </div>
                     </div>
                   )}
                   <div className="pt-2 text-center"><button onClick={() => setShowSettings(false)} className={`${theme.secondary} font-black text-sm hover:underline`}>סגור וחזור לספירה</button></div>
@@ -692,7 +760,8 @@ export default function App() {
               onToggleVacation={() => toggleVacation(dateKey(selectedDay.date))}
               onAddNote={(text, type, time, enabled) => addNote(dateKey(selectedDay.date), text, type, time, enabled)}
               onEditNote={(id, text, type, time, enabled) => editNote(dateKey(selectedDay.date), id, text, type, time, enabled)}
-              onDeleteNote={(id) => deleteNote(dateKey(selectedDay.date), id)} />
+              onDeleteNote={(id) => deleteNote(dateKey(selectedDay.date), id)}
+              onToggleNoteCompletion={(id) => toggleNoteCompletion(dateKey(selectedDay.date), id)} />
           )}
         </AnimatePresence>
 
@@ -743,7 +812,13 @@ export default function App() {
             <div className="w-3.5 h-3.5 bg-white border-2 border-[#f3f4f6] rounded-md shadow-sm flex items-center justify-center">
               <span className={`text-[8px] font-black ${theme.notesNumColor}`}>7</span>
             </div>
-            <span className={`${theme.secondary} text-[10px] font-bold`}>יש הערה</span>
+            <span className={`${theme.secondary} text-[10px] font-bold`}>יש הערה (מודגש)</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <div className="w-3.5 h-3.5 bg-white border-2 border-[#f3f4f6] rounded-md shadow-sm flex items-center justify-center">
+              <span className="text-[8px] font-black text-green-600">7</span>
+            </div>
+            <span className={`${theme.secondary} text-[10px] font-bold`}>בוצע</span>
           </div>
           <LegendItem color="bg-white" borderColor="border-[#4caf50]" label="היום" theme={theme} />
         </div>
@@ -765,7 +840,7 @@ export default function App() {
 
         <div className="px-5 space-y-12">
           {(Object.entries(months) as [string, DayData[]][]).map(([name, days]) => (
-            <motion.div key={name} initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className={`bg-white rounded-[3rem] overflow-hidden shadow-xl border ${theme.cardBorder}`}>
+            <motion.div key={name} id={`month-${name}`} initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className={`bg-white rounded-[3rem] overflow-hidden shadow-xl border ${theme.cardBorder}`}>
               <div className={`bg-gradient-to-r ${theme.headerGradient} py-6 text-center relative overflow-hidden`}>
                 <div className="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none"><Sparkles className="absolute -top-2 -left-2 text-white" size={40} /><Heart className="absolute -bottom-2 -right-2 text-white" size={40} /></div>
                 <div className="relative z-10">
@@ -781,7 +856,6 @@ export default function App() {
                   {Array.from({ length: days[0].date.getDay() }).map((_, i) => <div key={`pad-${i}`} className="aspect-square" />)}
                   {days.map(day => (
                     <DaySquare key={day.date.getTime()} day={day} targetDate={targetDate} theme={theme}
-                      hasNotes={(dayExtras[dateKey(day.date)]?.notes?.length ?? 0) > 0}
                       onClick={() => setSelectedDay({ ...day, isVacation: !!(dayExtras[dateKey(day.date)]?.vacation) })} />
                   ))}
                 </div>
@@ -793,17 +867,38 @@ export default function App() {
         <div className={`p-16 text-center ${theme.secondary} text-[11px] flex flex-col items-center justify-center gap-4 font-black`}>
           <div className="flex items-center gap-2"><Info className="w-4 h-4" /><span>הנתונים מחושבים לפי ימי עבודה בפועל • 2026 • בשעה טובה!</span></div>
         </div>
+
+        {/* Floating Scroll to Today Button */}
+        <motion.button
+          initial={{ opacity: 0, scale: 0.5, x: 50 }}
+          animate={{ opacity: 1, scale: 1, x: 0 }}
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
+          onClick={scrollToToday}
+          className={`fixed bottom-24 left-6 z-40 w-14 h-14 rounded-full shadow-lg flex flex-col items-center justify-center bg-gradient-to-br ${theme.gradient} text-white border-2 border-white/40 backdrop-blur-md`}
+          title="גלול להיום"
+        >
+          <motion.div
+            animate={{ y: [0, -2, 0] }}
+            transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
+            className="flex flex-col items-center"
+          >
+            <Calendar size={20} className="mb-0.5" />
+            <span className="text-[9px] font-black tracking-tighter">היום</span>
+          </motion.div>
+        </motion.button>
       </div>
     </div>
   );
 }
 
-function DayModal({ day, theme, dayExtras, onClose, onToggleVacation, onAddNote, onEditNote, onDeleteNote }: {
+function DayModal({ day, theme, dayExtras, onClose, onToggleVacation, onAddNote, onEditNote, onDeleteNote, onToggleNoteCompletion }: {
   day: DayData; theme: Theme; dayExtras: DayExtras;
   onClose: () => void; onToggleVacation: () => void;
   onAddNote: (text: string, type: 'note' | 'task', time: string, enabled: boolean) => void;
   onEditNote: (id: string, text: string, type: 'note' | 'task', time: string, enabled: boolean) => void;
   onDeleteNote: (id: string) => void;
+  onToggleNoteCompletion: (id: string) => void;
 }) {
   const [noteText, setNoteText] = useState('');
   const [noteTime, setNoteTime] = useState('');
@@ -920,15 +1015,24 @@ function DayModal({ day, theme, dayExtras, onClose, onToggleVacation, onAddNote,
             </AnimatePresence>
             {(dayExtras.notes || []).length === 0 && !showAddNote && <p className="text-xs text-gray-300 text-center py-2">אין הערות עדיין</p>}
             {(dayExtras.notes || []).map(note => (
-              <div key={note.id} className="bg-white rounded-xl p-3 flex items-start justify-between gap-2 border border-[#f3f4f6]">
+              <div key={note.id} className={`bg-white rounded-xl p-3 flex items-start justify-between gap-2 border ${note.completed ? 'border-green-200 bg-green-50/30' : 'border-[#f3f4f6]'}`}>
+                <div className="flex items-center pt-1">
+                  <input 
+                    type="checkbox" 
+                    checked={note.completed || false} 
+                    onChange={() => onToggleNoteCompletion(note.id)}
+                    className="w-4 h-4 rounded border-gray-300 text-green-600 focus:ring-green-500 cursor-pointer"
+                  />
+                </div>
                 <div className="flex-1">
                   <div className="flex items-center gap-1.5 mb-1">
                     {note.type === 'task'
-                      ? <span className="text-[10px] font-black bg-green-100 text-green-700 px-2 py-0.5 rounded-full">✅ משימה</span>
-                      : <span className="text-[10px] font-black bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">📝 הערה</span>
+                      ? <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${note.completed ? 'bg-green-200 text-green-800' : 'bg-green-100 text-green-700'}`}>✅ משימה</span>
+                      : <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${note.completed ? 'bg-blue-200 text-blue-800' : 'bg-blue-100 text-blue-700'}`}>📝 הערה</span>
                     }
+                    {note.completed && <span className="text-[10px] font-black text-green-600">בוצע!</span>}
                   </div>
-                  <p className="text-sm text-[#111827] leading-relaxed">{note.text}</p>
+                  <p className={`text-sm leading-relaxed font-bold ${note.completed ? 'text-gray-400 line-through' : 'text-[#111827]'}`}>{note.text}</p>
                   {note.reminderEnabled && note.reminderTime && <p className="text-[10px] text-[#9ca3af] mt-1 flex items-center gap-1"><Clock size={10} /> תזכורת: {note.reminderTime}</p>}
                 </div>
                 <div className="flex flex-col gap-1">
@@ -963,8 +1067,8 @@ function LegendItem({ color, borderColor, label, theme }: { color: string; borde
   );
 }
 
-const DaySquare: React.FC<{ day: DayData; targetDate: Date; theme: Theme; hasNotes: boolean; onClick: () => void }> =
-  ({ day, targetDate, theme, hasNotes, onClick }) => {
+const DaySquare: React.FC<{ day: DayData; targetDate: Date; theme: Theme; onClick: () => void }> =
+  ({ day, targetDate, theme, onClick }) => {
     let bgColor = "bg-white", borderColor = "border-[#f3f4f6]";
     if (day.isVacation || day.holidayInfo) { bgColor = "bg-[#fce8f0]"; borderColor = "border-[#f5b8d0]"; }
     else if (day.isWorkday) { bgColor = "bg-[#fff9c4]"; borderColor = "border-[#ffd54f]"; }
@@ -973,12 +1077,15 @@ const DaySquare: React.FC<{ day: DayData; targetDate: Date; theme: Theme; hasNot
     if (day.hasidicEvent) { borderColor = theme.hasidicBorder; }
     if (day.isToday) borderColor = "border-[#4caf50] border-[2px]";
 
-    const dayNumColor = hasNotes ? theme.notesNumColor : "text-[#9ca3af]";
+    const dayNumColor = day.hasNotes 
+      ? (day.allNotesCompleted ? "text-green-600" : theme.notesNumColor) 
+      : "text-[#9ca3af]";
+    const fontWeight = day.hasNotes ? "font-black" : "font-bold";
 
     return (
       <button onClick={onClick} className={`aspect-square rounded-xl border-2 ${borderColor} ${bgColor} flex flex-col items-center justify-center p-0.5 relative overflow-hidden shadow-sm active:scale-95 transition-transform cursor-pointer ${day.date > targetDate ? 'opacity-10 grayscale' : ''}`}>
         <div className={`flex flex-col items-center justify-center -space-y-0.5 w-full ${(day.holidayInfo || day.isVacation) ? 'mb-2' : ''}`}>
-          <span className={`text-[10px] font-bold leading-tight ${dayNumColor}`}>{day.dayOfMonth}</span>
+          <span className={`text-[10px] ${fontWeight} leading-tight ${dayNumColor}`}>{day.dayOfMonth}</span>
           <span className={`text-[8px] font-medium ${theme.hebrewDateColor} leading-tight truncate max-w-full px-0.5`}>{day.hebrewDate}</span>
           {day.countdown != null && (
             <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }} className="text-[12px] font-black text-[#fbc02d] leading-none mt-0.5">{day.countdown}</motion.span>

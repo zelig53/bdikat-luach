@@ -1,15 +1,11 @@
 // Service Worker — התראות + PWA install support
-const CACHE_NAME = 'bdikat-luach-v1';
+const CACHE_NAME = 'bdikat-luach-v2';
 const DB_NAME = 'reminders-db';
 const STORE_NAME = 'reminders';
 
 self.addEventListener('install', e => {
-  e.waitUntil(
-    caches.open(CACHE_NAME).then(cache =>
-      cache.addAll(['/', '/index.html', '/manifest.json', '/icon.svg'])
-        .catch(() => {}) // ignore cache errors
-    ).then(() => self.skipWaiting())
-  );
+  // skipWaiting מיד — ללא cache בinstall כדי למנוע לולאת reload ב-Vercel
+  e.waitUntil(self.skipWaiting());
 });
 
 self.addEventListener('activate', e => {
@@ -44,9 +40,34 @@ async function restoreReminders() {
 }
 
 self.addEventListener('fetch', e => {
+  // navigation — תמיד מהרשת, fallback לcache רק אם offline
+  if (e.request.mode === 'navigate') {
+    e.respondWith(
+      fetch(e.request)
+        .then(res => {
+          if (res && res.status === 200 && res.type === 'basic') {
+            const resClone = res.clone();
+            caches.open(CACHE_NAME).then(c => c.put(e.request, resClone));
+          }
+          return res;
+        })
+        .catch(() => caches.match(e.request).then(r => r || caches.match('/')))
+    );
+    return;
+  }
   if (e.request.method !== 'GET') return;
+  // assets — cache-first
   e.respondWith(
-    fetch(e.request).catch(() => caches.match(e.request))
+    caches.match(e.request).then(res => {
+      if (res) return res;
+      return fetch(e.request).then(networkRes => {
+        if (networkRes && networkRes.status === 200 && networkRes.type === 'basic') {
+          const clone = networkRes.clone();
+          caches.open(CACHE_NAME).then(c => c.put(e.request, clone));
+        }
+        return networkRes;
+      });
+    })
   );
 });
 

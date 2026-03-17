@@ -10,12 +10,21 @@
     <!-- iOS Support -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="חופשת לידה">
+    <meta name="apple-mobile-web-app-title" content="ספירה לאחור לחופשת לידה">
     <link rel="apple-touch-icon" href="/icon.svg">
+
+    <!-- Service Worker registration — חייב לקרות לפני כל דבר אחר -->
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw-custom.js', { scope: '/' })
+            .catch(err => console.warn('SW registration failed:', err));
+        });
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
-
