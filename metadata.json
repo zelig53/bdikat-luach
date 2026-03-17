@@ -1,5 +1,5 @@
 {
   "name": "חגיגת חופשת לידה - ספירה לאחור",
   "description": "לוח ספירה לאחור חגיגי ומזמין של ימי עבודה עד היציאה לחופשת לידה, כולל תאריכים עבריים באותיות, חגים ואווירה חגיגית",
-  "requestFramePermissions": []
+  "requestFramePermissions": ["notifications"]
 }
