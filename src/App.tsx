@@ -300,63 +300,57 @@ async function requestNotificationPermission(): Promise<boolean> {
   return result === 'granted';
 }
 
-async function getCustomSW(): Promise<ServiceWorkerRegistration | null> {
-  if (!('serviceWorker' in navigator)) return null;
-  try {
-    const regs = await navigator.serviceWorker.getRegistrations();
-    // חפש את ה-SW המותאם שלנו
-    const custom = regs.find(r => r.scope && (r.active || r.waiting || r.installing));
-    if (custom) return custom;
-    // אם לא נמצא — רשום מחדש
-    const reg = await navigator.serviceWorker.register('/sw-custom.js', { scope: '/' });
-    await new Promise(resolve => setTimeout(resolve, 500)); // המתן להפעלה
-    return reg;
-  } catch { return null; }
-}
-
+// ---- שליחת התראה מיידית (נמצא ב-SW או Notification ישירה) ----
 async function showNotification(title: string, body: string, tag?: string) {
   if (!('Notification' in window) || Notification.permission !== 'granted') return;
-  // נסה Notification ישירה — עובד על מחשב
-  try {
-    new Notification(title, { body, icon: '/icon.svg', tag });
-    return;
-  } catch { /* אנדרואיד לא תומך — נמשיך לSW */ }
-  // אנדרואיד Chrome — חייב SW
-  const reg = await getCustomSW();
-  if (reg) {
-    try {
-      await reg.showNotification(title, { body, icon: '/icon.svg', tag });
-    } catch(e) { console.warn('SW notification failed:', e); }
-  }
+  // Desktop — Notification ישירה
+  try { new Notification(title, { body, icon: '/icon.svg', tag }); return; }
+  catch { /* Android אינו תומך — ממשיך ל-SW */ }
+  // Android Chrome — חייב SW
+  const reg = await navigator.serviceWorker?.ready.catch(() => null);
+  if (reg) await reg.showNotification(title, { body, icon: '/icon.svg', tag }).catch(() => {});
 }
 
+// ---- תזמון תזכורת: תמיד שומר ב-IndexedDB דרך SW + setTimeout כגיבוי ----
 async function scheduleReminder(note: Note, key: string) {
   if (!note.reminderEnabled || !note.reminderTime) return;
   if (!('Notification' in window) || Notification.permission !== 'granted') return;
+
   const [h, m] = note.reminderTime.split(':').map(Number);
-  const fireAt = new Date(`${key}T${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:00`);
+  const [year, month, day] = key.split('-').map(Number);
+  const fireAt = new Date(year, month - 1, day, h, m, 0, 0);
   const delay = fireAt.getTime() - Date.now();
   if (delay <= 0) return;
 
+  const dateLabel = `${String(day).padStart(2,'0')}/${String(month).padStart(2,'0')}/${year}`;
   const typeLabel = note.type === 'task' ? '✅ משימה' : '📝 הערה';
-  const [year, month, day] = key.split('-');
-  const dateLabel = `${day}/${month}/${year}`;
   const title = `${typeLabel} — ${dateLabel}`;
+  const payload = { noteId: note.id, title, body: note.text, fireAt: fireAt.toISOString() };
 
-  // נסה לשלוח ל-SW (שורד סגירת הדפדפן)
-  const reg = await getCustomSW();
-  if (reg?.active) {
-    reg.active.postMessage({
-      type: 'SCHEDULE_REMINDER',
-      payload: { noteId: note.id, title, body: note.text, fireAt: fireAt.toISOString() },
-    });
-    return;
+  // שלח תמיד ל-SW (שומר ב-IndexedDB — שורד סגירת הדפדפן)
+  const sendToSW = (sw: ServiceWorker) =>
+    sw.postMessage({ type: 'SCHEDULE_REMINDER', payload });
+
+  if (navigator.serviceWorker?.controller) {
+    sendToSW(navigator.serviceWorker.controller);
+  } else {
+    // SW עוד לא שלט על הדף — המתן לו ואז שלח
+    navigator.serviceWorker?.ready.then(reg => {
+      if (reg.active) sendToSW(reg.active);
+    }).catch(() => {});
   }
 
-  // fallback — setTimeout (עובד רק כשהדפדפן פתוח)
-  setTimeout(() => {
-    showNotification(title, note.text, note.id);
-  }, delay);
+  // גיבוי: setTimeout בדף — יורה גם אם SW לא מגיב (כשהדפדפן פתוח)
+  setTimeout(() => showNotification(title, note.text, note.id), delay);
+}
+
+// ביטול תזכורת גם ב-SW וגם ב-localStorage flag
+async function cancelReminder(noteId: string) {
+  const sw = navigator.serviceWorker?.controller;
+  if (sw) sw.postMessage({ type: 'CANCEL_REMINDER', payload: { noteId } });
+  else navigator.serviceWorker?.ready.then(reg =>
+    reg.active?.postMessage({ type: 'CANCEL_REMINDER', payload: { noteId } })
+  ).catch(() => {});
 }
 
 export default function App() {
@@ -415,6 +409,21 @@ export default function App() {
   // שחזור תזכורות שמורות בכל טעינה של האפליקציה
   useEffect(() => {
     if (Notification.permission !== 'granted') return;
+
+    // שלח RESTORE_REMINDERS ל-SW — הוא יטען מ-IndexedDB ויקבע timers מחדש
+    const restore = () => {
+      const sw = navigator.serviceWorker?.controller;
+      if (sw) {
+        sw.postMessage({ type: 'RESTORE_REMINDERS' });
+      } else {
+        // SW עוד לא ready — המתן לו
+        navigator.serviceWorker?.ready.then(reg => {
+          reg.active?.postMessage({ type: 'RESTORE_REMINDERS' });
+        }).catch(() => {});
+      }
+    };
+
+    // גם רשום תזכורות חדשות שטרם נשמרו ב-SW (גיבוי)
     (Object.entries(dayExtras) as [string, DayExtras][]).forEach(([key, extras]) => {
       (extras.notes || []).forEach(note => {
         if (note.reminderEnabled && note.reminderTime) {
@@ -422,6 +431,8 @@ export default function App() {
         }
       });
     });
+
+    restore();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // רץ פעם אחת בלבד בהפעלה
 
@@ -540,9 +551,7 @@ export default function App() {
 
   const deleteNote = useCallback(async (key: string, noteId: string) => {
     setDayExtras(prev => { const cur = prev[key] || { notes: [] }; return { ...prev, [key]: { ...cur, notes: cur.notes.filter(n => n.id !== noteId) } }; });
-    // בטל תזכורת ב-SW אם קיימת
-    const reg = await getCustomSW();
-    reg?.active?.postMessage({ type: 'CANCEL_REMINDER', payload: { noteId } });
+    await cancelReminder(noteId);
   }, []);
 
   const editNote = useCallback(async (key: string, noteId: string, text: string, type: 'note' | 'task', reminderTime: string, reminderEnabled: boolean) => {
@@ -555,8 +564,7 @@ export default function App() {
       return { ...prev, [key]: { ...cur, notes: updated } };
     });
     // בטל תזכורת ישנה תמיד, ואז קבע מחדש אם צריך
-    const reg = await getCustomSW();
-    reg?.active?.postMessage({ type: 'CANCEL_REMINDER', payload: { noteId } });
+    await cancelReminder(noteId);
     if (reminderEnabled) {
       const note: Note = { id: noteId, text, type, reminderTime, reminderEnabled };
       scheduleReminder(note, key);
